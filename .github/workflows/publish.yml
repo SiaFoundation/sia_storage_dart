@@ -1,0 +1,38 @@
+name: Publish
+
+# Triggered when knope's `release` job pushes a vX.Y.Z tag. Builds the
+# wasm bundle and publishes the package to pub.dev via OIDC trusted
+# publishing.
+#
+# Pub.dev requires the publishing workflow to be triggered by a tag push:
+# https://dart.dev/tools/pub/automated-publishing
+#
+# Configure pub.dev → Admin → Automated publishing with:
+#   Repository:    SiaFoundation/sia_storage_dart
+#   Tag pattern:   v{{version}}
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # pub.dev OIDC token exchange
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dart-lang/setup-dart@v1
+
+      - name: Setup Environment
+        run: |
+          rustup update stable
+          rustup target add wasm32-unknown-unknown
+          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+          cargo install flutter_rust_bridge_codegen
+
+      - name: Build wasm bundle
+        run: tool/build_web.sh
+
+      - name: dart pub publish
+        run: dart pub publish --force

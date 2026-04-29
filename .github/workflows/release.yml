@@ -1,17 +1,18 @@
 name: Release
 
-# Two-phase release-PR flow driven by Knope.
+# Three-stage release flow:
 #
-#   1. Push to main → `prepare-release` job runs `knope prepare-release`,
-#      which force-pushes a `release` branch and opens/updates a PR titled
-#      "chore: prepare releases vX.Y.Z" containing the version bump and
-#      regenerated changelog.
-#   2. Merging that PR → `pull_request: closed` event fires, the `release`
-#      job runs `knope release`: build wasm, tag, create the GitHub Release,
-#      `dart pub publish`.
+#   1. Push to main → `prepare-release` job opens / updates a release PR
+#      titled "chore: prepare releases vX.Y.Z" containing the version bump
+#      and regenerated changelog.
+#   2. Merging that PR → `release` job runs `knope release`, which creates
+#      the git tag and the GitHub Release. The tag push is what triggers
+#      publish.yml, which performs the actual pub.dev publish.
 #
-# Pub.dev auth is OIDC; configure this package as a Trusted Publisher
-# (pub.dev → Admin → Automated publishing) before the first CI release.
+# The release job pushes the tag using `secrets.RELEASE_PAT` rather than the
+# default GITHUB_TOKEN — events triggered by GITHUB_TOKEN don't fire
+# downstream workflows (GH's recursive-workflow guard), so a token-pushed
+# tag would never trigger publish.yml.
 on:
   push:
     branches: [main]
@@ -53,31 +54,24 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write   # tag, create GitHub release
-      id-token: write   # pub.dev OIDC token exchange
     steps:
+      # Checkout with the PAT so the tag push knope performs uses PAT auth.
+      # GITHUB_TOKEN-driven tag pushes don't trigger publish.yml.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: main
+          token: ${{ secrets.RELEASE_PAT }}
 
       - name: Configure git author
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - uses: dart-lang/setup-dart@v1
-
       - name: Setup Knope
         uses: knope-dev/action@8055388a38df33f0603050415ac3d8175d6b566f
 
-      - name: Setup Environment
-        run: |
-          rustup update stable
-          rustup target add wasm32-unknown-unknown
-          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-          cargo install flutter_rust_bridge_codegen
-
       - name: knope release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}
         run: knope release

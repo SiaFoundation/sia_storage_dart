@@ -53,26 +53,17 @@ variables = { "$version" = "Version" }
 template = "Merging this PR will release `$version` to pub.dev.\n\n$changelog"
 variables = { "$version" = "Version", "$changelog" = "ChangelogEntry" }
 
-# --- release: tag + publish (runs after the release PR merges) -------------
+# --- release: tag + GitHub Release (runs after the release PR merges) ------
+# Pushing the tag is what triggers publish.yml, which actually does the
+# pub.dev publish — pub.dev's OIDC trusted-publisher flow requires the
+# workflow to be triggered by a tag push, so the publish has to live in a
+# separate workflow.
 
 [[workflows]]
 name = "release"
 
-# Rebuild the prebuilt wasm bundle so it reflects the released sources.
-# web/pkg/ is gitignored but ships in the pub.dev tarball (.pubignore).
-[[workflows.steps]]
-type = "Command"
-command = "tool/build_web.sh"
-
-# Tag the commit and create the GitHub release.
 [[workflows.steps]]
 type = "Release"
-
-# Publish to pub.dev. --force skips the interactive confirmation; auth is
-# OIDC in CI (Trusted Publisher) or `dart pub login` cached creds locally.
-[[workflows.steps]]
-type = "Command"
-command = "dart pub publish --force"
 
 # --- document-change: manual changeset entry -------------------------------
 
