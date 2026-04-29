@@ -1,0 +1,27 @@
+name: sia_storage
+description: >-
+  Dart bindings for the Sia Storage SDK. Upload, download, and pin objects on
+  the Sia network from Flutter and pure Dart applications.
+version: 0.1.0
+repository: https://github.com/SiaFoundation/sia_storage_dart
+issue_tracker: https://github.com/SiaFoundation/sia_storage_dart/issues
+topics:
+  - sia
+  - storage
+  - decentralized
+  - rust
+  - ffi
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  flutter_rust_bridge: ^2.12.0
+  # Used from hook/build.dart; pub requires hook deps in `dependencies`.
+  hooks: ^1.0.0
+  native_toolchain_rust: ^1.0.0
+
+dev_dependencies:
+  code_assets: ^1.0.0
+  lints: ^6.0.0
+  test: ^1.25.0

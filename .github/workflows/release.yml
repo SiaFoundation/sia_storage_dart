@@ -1,0 +1,83 @@
+name: Release
+
+# Two-phase release-PR flow driven by Knope.
+#
+#   1. Push to main → `prepare-release` job runs `knope prepare-release`,
+#      which force-pushes a `release` branch and opens/updates a PR titled
+#      "chore: prepare releases vX.Y.Z" containing the version bump and
+#      regenerated changelog.
+#   2. Merging that PR → `pull_request: closed` event fires, the `release`
+#      job runs `knope release`: build wasm, tag, create the GitHub Release,
+#      `dart pub publish`.
+#
+# Pub.dev auth is OIDC; configure this package as a Trusted Publisher
+# (pub.dev → Admin → Automated publishing) before the first CI release.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  prepare-release:
+    if: "github.event_name == 'push' && !contains(github.event.head_commit.message, 'chore: prepare releases')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write        # push the `release` branch
+      pull-requests: write   # open / update the release PR
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # knope walks commit history since last tag
+
+      - name: Configure git author
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Setup Knope
+        uses: knope-dev/action@8055388a38df33f0603050415ac3d8175d6b566f
+
+      # continue-on-error: knope exits non-zero when there are no changes
+      # to release (no conventional commits since last tag). That's expected
+      # on commits that don't warrant a bump — don't fail the workflow.
+      - name: knope prepare-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: knope prepare-release --verbose
+        continue-on-error: true
+
+  release:
+    if: github.head_ref == 'release' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # tag, create GitHub release
+      id-token: write   # pub.dev OIDC token exchange
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Configure git author
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - uses: dart-lang/setup-dart@v1
+
+      - name: Setup Knope
+        uses: knope-dev/action@8055388a38df33f0603050415ac3d8175d6b566f
+
+      - name: Setup Environment
+        run: |
+          rustup update stable
+          rustup target add wasm32-unknown-unknown
+          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+          cargo install flutter_rust_bridge_codegen
+
+      - name: knope release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: knope release

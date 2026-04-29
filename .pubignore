@@ -1,0 +1,27 @@
+# Publish-time ignore list. When this file exists, pub uses it instead of
+# .gitignore for deciding what to include in the published tarball.
+#
+# Mirrors .gitignore *except* web/pkg/ — that bundle is gitignored but must
+# ship to consumers, and is rebuilt by tool/build_web.sh before publish.
+
+# Dart / Pub
+.dart_tool/
+.pub-cache/
+.pub/
+build/
+coverage/
+pubspec.lock
+
+# Rust
+rust/target/
+
+# frb codegen scratch
+logs/
+
+# IDE / OS
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+.DS_Store

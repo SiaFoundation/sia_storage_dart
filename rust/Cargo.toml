@@ -1,0 +1,51 @@
+[package]
+name = "rust_lib_sia_storage_flutter"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+flutter_rust_bridge = { version = "=2.12.0", features = ["chrono"] }
+sia_storage = "0.8"
+sia_core = "0.3"
+chrono = "0.4"
+anyhow = "1"
+bytes = "1"
+futures-core = "0.3"
+tokio-stream = { version = "0.1", default-features = false }
+tokio-util = { version = "0.7", features = ["io"] }
+
+# tokio: multi-threaded on native, single-threaded only on wasm.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies.tokio]
+version = "1"
+features = ["sync", "rt", "rt-multi-thread", "macros", "io-util"]
+
+[target.'cfg(target_arch = "wasm32")'.dependencies.tokio]
+version = "1"
+default-features = false
+features = ["sync", "rt", "macros", "io-util"]
+
+# sia_storage's wasm path uses WebTransport via web-sys; declare the features
+# at the leaf crate so Cargo activates them during our wasm builds.
+[target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
+version = "0.3"
+features = [
+    "WebTransport",
+    "WebTransportOptions",
+    "WebTransportBidirectionalStream",
+    "WebTransportSendStream",
+    "WebTransportReceiveStream",
+    "WebTransportHash",
+    "WebTransportCloseInfo",
+    "ReadableStream",
+    "ReadableStreamDefaultReader",
+    "WritableStream",
+    "WritableStreamDefaultWriter",
+    "TransformStream",
+]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }

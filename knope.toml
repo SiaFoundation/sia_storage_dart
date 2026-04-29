@@ -1,0 +1,83 @@
+# Release automation for sia_storage (Dart package).
+#
+# Two-phase release-PR flow:
+#   1. `knope prepare-release` (CI on push to main) — bumps pubspec.yaml +
+#      CHANGELOG.md from conventional commits, force-pushes a `release`
+#      branch, opens/updates a "chore: prepare release" PR.
+#   2. Merging that PR pushes the bump to main, which triggers
+#      `knope release` (CI) — builds wasm, tags, GitHub Release, pub publish.
+#
+# Locally:
+#   knope document-change   # add a changeset for the current PR
+#   knope prepare-release   # opens the release PR by hand
+#   knope release           # full local release (skip the PR step)
+
+[package]
+versioned_files = ["pubspec.yaml"]
+changelog = "CHANGELOG.md"
+
+[github]
+owner = "SiaFoundation"
+repo = "sia_storage_dart"
+
+# --- prepare-release: open / update the release PR -------------------------
+
+[[workflows]]
+name = "prepare-release"
+
+[[workflows.steps]]
+type = "Command"
+command = "git switch -c release"
+
+[[workflows.steps]]
+type = "PrepareRelease"
+
+[[workflows.steps]]
+type = "Command"
+command = "git commit -am 'chore: prepare releases $version'"
+variables = { "$version" = "Version" }
+
+[[workflows.steps]]
+type = "Command"
+command = "git push --force --set-upstream origin release"
+
+[[workflows.steps]]
+type = "CreatePullRequest"
+base = "main"
+
+[workflows.steps.title]
+template = "chore: prepare releases $version"
+variables = { "$version" = "Version" }
+
+[workflows.steps.body]
+template = "Merging this PR will release `$version` to pub.dev.\n\n$changelog"
+variables = { "$version" = "Version", "$changelog" = "ChangelogEntry" }
+
+# --- release: tag + publish (runs after the release PR merges) -------------
+
+[[workflows]]
+name = "release"
+
+# Rebuild the prebuilt wasm bundle so it reflects the released sources.
+# web/pkg/ is gitignored but ships in the pub.dev tarball (.pubignore).
+[[workflows.steps]]
+type = "Command"
+command = "tool/build_web.sh"
+
+# Tag the commit and create the GitHub release.
+[[workflows.steps]]
+type = "Release"
+
+# Publish to pub.dev. --force skips the interactive confirmation; auth is
+# OIDC in CI (Trusted Publisher) or `dart pub login` cached creds locally.
+[[workflows.steps]]
+type = "Command"
+command = "dart pub publish --force"
+
+# --- document-change: manual changeset entry -------------------------------
+
+[[workflows]]
+name = "document-change"
+
+[[workflows.steps]]
+type = "CreateChangeFile"

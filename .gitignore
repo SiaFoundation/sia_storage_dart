@@ -1,0 +1,28 @@
+# Dart / Pub
+.dart_tool/
+.pub-cache/
+.pub/
+build/
+coverage/
+pubspec.lock
+
+# Rust
+rust/target/
+
+# frb codegen scratch
+logs/
+
+# IDE / OS
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+.DS_Store
+
+# Prebuilt wasm bundle — built by tool/build_web.sh and shipped in the
+# pub.dev tarball (see .pubignore), but not tracked in git.
+web/pkg/
+
+# Note: generated bindings (lib/src/rust/, rust/src/frb_generated.rs) are
+# committed so consumers don't need to run codegen themselves.

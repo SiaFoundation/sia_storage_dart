@@ -1,0 +1,11 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  exclude:
+    - lib/src/rust/**
+
+linter:
+  rules:
+    # hook/build.dart imports dev-only build packages; that's the correct layering.
+    depend_on_referenced_packages: false
+

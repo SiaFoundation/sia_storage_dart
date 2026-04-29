@@ -1,0 +1,4 @@
+# WebTransport in web-sys is behind an unstable cfg gate; sia_storage's wasm
+# path requires it.
+[target.wasm32-unknown-unknown]
+rustflags = ["--cfg=web_sys_unstable_apis"]
