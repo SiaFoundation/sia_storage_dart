@@ -28,7 +28,7 @@ jobs:
       contents: write        # push the `release` branch
       pull-requests: write   # open / update the release PR
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0   # knope walks commit history since last tag
 
@@ -38,7 +38,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Setup Knope
-        uses: knope-dev/action@8055388a38df33f0603050415ac3d8175d6b566f
+        uses: knope-dev/action@19617851f9f13ab2f27a05989c55efb18aca3675 # v2.1.2
 
       # continue-on-error: knope exits non-zero when there are no changes
       # to release (no conventional commits since last tag). That's expected
@@ -57,7 +57,7 @@ jobs:
     steps:
       # Checkout with the PAT so the tag push knope performs uses PAT auth.
       # GITHUB_TOKEN-driven tag pushes don't trigger publish.yml.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
           ref: main
@@ -69,7 +69,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Setup Knope
-        uses: knope-dev/action@8055388a38df33f0603050415ac3d8175d6b566f
+        uses: knope-dev/action@19617851f9f13ab2f27a05989c55efb18aca3675 # v2.1.2
 
       - name: knope release
         env:
