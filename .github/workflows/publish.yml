@@ -28,6 +28,9 @@ jobs:
         run: |
           rustup update stable
           rustup target add wasm32-unknown-unknown
+          # frb needs nightly
+          rustup toolchain install nightly --component rust-src
+          rustup target add wasm32-unknown-unknown --toolchain nightly
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
           cargo install flutter_rust_bridge_codegen
 
