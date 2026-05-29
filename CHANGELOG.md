@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.2.0 (2026-05-29)
+
+### Breaking Changes
+
+#### Rename `uploadStream`/`downloadStream` to `upload`/`download`
+
+The stream-based helpers on `Sdk` are renamed to match the underlying SDK: `uploadStream` is now `upload` and `downloadStream` is now `download`. The raw callback/`StreamSink` bindings they wrapped are no longer exposed on the public `Sdk` type.
+
+Migrate by dropping the `Stream` suffix:
+
+```dart
+// before
+final upload = sdk.uploadStream(object: obj, source: file.openRead());
+final download = sdk.downloadStream(object: obj);
+
+// after
+final upload = sdk.upload(object: obj, source: file.openRead());
+final download = sdk.download(object: obj);
+```
+
+### Features
+
+#### Add packed upload support
+
+Adds `Sdk.uploadPacked`, which batches multiple small objects into shared slabs to avoid the per-object padding of a regular upload. Add objects to the returned session via `PackedUpload.add` (streaming bytes), then `finalize` to obtain the pinned objects. Per-shard progress is reported across the whole session.
+
+#### Update `sia_storage` to 0.9.1
+
+Bumps the bundled `sia_storage` crate from 0.8 to 0.9.1.
+
+Upstream `sia_storage` changelog:
+
+###### 0.9.1
+
+- Bump sia_core_derive.
+
+###### 0.9.0
+
+Switch to `sia_reed_solomon` for erasure-coding. Replaced `reed-solomon-erasure` with `sia_reed_solomon`. Encoded parity bytes are compatible with existing `indexd` slabs.
+
+120 MiB upload against the mock cluster (`cargo bench -p sia_storage --all-features`):
+
+| | Before | After | Δ |
+|---|---|---|---|
+| `upload/90 inflight` | ~285 MiB/s | **611 MiB/s** | **+114%** |
+| `upload/10 inflight` | ~175 MiB/s | **595 MiB/s** | **+240%** |
+| `upload/default`     | ~184 MiB/s | **609 MiB/s** | **+231%** |
+
+- Measure RPCAverage in throughput instead of latency to take into account transmitted bytes.
+
 ## 0.1.0
 
 Initial release.
