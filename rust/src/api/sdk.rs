@@ -12,6 +12,7 @@ use super::keys::AppKey;
 use super::object::{ObjectEvent, PinnedObject, slab_from_native};
 use super::options::{DownloadOptions, UploadOptions};
 use super::types::{Account, AddressProtocol, App, Host, NetAddress, ObjectsCursor, PinnedSector, PinnedSlab};
+use super::upload::PackedUpload;
 
 use crate::frb_generated::StreamSink;
 
@@ -34,64 +35,6 @@ impl Sdk {
         AppKey {
             inner: self.inner.app_key().clone(),
         }
-    }
-
-    /// Uploads an object to the Sia network by streaming bytes from a Dart
-    /// pull callback. The callback returns the next chunk; an empty or `null`
-    /// result signals EOF.
-    ///
-    /// Pass a fresh [PinnedObject::new] for new uploads. To resume or append
-    /// to a previous upload, pass the object returned from the prior call.
-    /// Note that appending changes the object's ID; the object must be
-    /// re-pinned afterwards and any cached references updated.
-    pub async fn upload(
-        &self,
-        object: &PinnedObject,
-        source: impl Fn() -> DartFnFuture<Option<Vec<u8>>> + Send + Sync + 'static,
-        options: &UploadOptions,
-    ) -> Result<PinnedObject> {
-        run_local(async {
-            let opts = options.build();
-            let snapshot = object.snapshot();
-            let reader = dart_chunk_reader(source);
-            let obj = self
-                .inner
-                .clone()
-                .upload(snapshot, reader, opts)
-                .await
-                .map_err(|e| anyhow!("{e}"))?;
-            Ok(PinnedObject {
-                inner: Mutex::new(obj),
-            })
-        })
-        .await
-    }
-
-    /// Downloads an object from the Sia network as a stream of byte chunks.
-    pub async fn download(
-        &self,
-        object: &PinnedObject,
-        sink: StreamSink<Vec<u8>>,
-        options: &DownloadOptions,
-    ) -> Result<()> {
-        run_local(async {
-            let opts = options.build();
-            let snapshot = object.snapshot();
-            let mut reader = self
-                .inner
-                .download(&snapshot, opts)
-                .map_err(|e| anyhow!("{e}"))?;
-            let mut buf = vec![0u8; 64 * 1024];
-            loop {
-                let n = reader.read(&mut buf).await.map_err(|e| anyhow!("{e}"))?;
-                if n == 0 {
-                    break;
-                }
-                sink.add(buf[..n].to_vec()).map_err(|e| anyhow!("{e}"))?;
-            }
-            Ok(())
-        })
-        .await
     }
 
     /// Returns a list of all usable hosts.
@@ -243,6 +186,79 @@ impl Sdk {
         })
         .await
     }
+}
+
+/// Uploads an object to the Sia network by streaming bytes from a Dart pull
+/// callback. The callback returns the next chunk; an empty or `null` result
+/// signals EOF.
+///
+/// Pass a fresh [PinnedObject::new] for new uploads. To resume or append to a
+/// previous upload, pass the object returned from the prior call. Note that
+/// appending changes the object's ID; the object must be re-pinned afterwards
+/// and any cached references updated.
+pub async fn upload(
+    sdk: &Sdk,
+    object: &PinnedObject,
+    source: impl Fn() -> DartFnFuture<Option<Vec<u8>>> + Send + Sync + 'static,
+    options: &UploadOptions,
+) -> Result<PinnedObject> {
+    run_local(async {
+        let opts = options.build();
+        let snapshot = object.snapshot();
+        let reader = dart_chunk_reader(source);
+        let obj = sdk
+            .inner
+            .clone()
+            .upload(snapshot, reader, opts)
+            .await
+            .map_err(|e| anyhow!("{e}"))?;
+        Ok(PinnedObject {
+            inner: Mutex::new(obj),
+        })
+    })
+    .await
+}
+
+/// Begins a packed upload, batching multiple small objects into shared slabs
+/// to avoid the per-object padding of [upload]. Add objects with
+/// [packed_upload_add](super::upload::packed_upload_add) and complete the
+/// upload with [PackedUpload::finalize](super::upload::PackedUpload::finalize).
+#[frb(sync)]
+pub fn upload_packed(sdk: &Sdk, options: &UploadOptions) -> Result<PackedUpload> {
+    let upload = sdk
+        .inner
+        .upload_packed(options.build())
+        .map_err(|e| anyhow!("{e}"))?;
+    Ok(PackedUpload {
+        inner: Mutex::new(Some(upload)),
+    })
+}
+
+/// Downloads an object from the Sia network as a stream of byte chunks.
+pub async fn download(
+    sdk: &Sdk,
+    object: &PinnedObject,
+    sink: StreamSink<Vec<u8>>,
+    options: &DownloadOptions,
+) -> Result<()> {
+    run_local(async {
+        let opts = options.build();
+        let snapshot = object.snapshot();
+        let mut reader = sdk
+            .inner
+            .download(&snapshot, opts)
+            .map_err(|e| anyhow!("{e}"))?;
+        let mut buf = vec![0u8; 64 * 1024];
+        loop {
+            let n = reader.read(&mut buf).await.map_err(|e| anyhow!("{e}"))?;
+            if n == 0 {
+                break;
+            }
+            sink.add(buf[..n].to_vec()).map_err(|e| anyhow!("{e}"))?;
+        }
+        Ok(())
+    })
+    .await
 }
 
 // ---- internal conversions ----

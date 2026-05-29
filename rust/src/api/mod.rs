@@ -5,3 +5,4 @@ pub mod object;
 pub mod options;
 pub mod sdk;
 pub mod types;
+pub mod upload;
