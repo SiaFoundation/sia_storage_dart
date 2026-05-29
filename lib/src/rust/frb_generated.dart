@@ -9,6 +9,7 @@ import 'api/object.dart';
 import 'api/options.dart';
 import 'api/sdk.dart';
 import 'api/types.dart';
+import 'api/upload.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.dart';
@@ -69,7 +70,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.12.0';
 
   @override
-  int get rustContentHash => -1202892652;
+  int get rustContentHash => 1814136236;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -137,6 +138,20 @@ abstract class RustLibApi extends BaseApi {
 
   DateTime crateApiObjectObjectEventUpdatedAt({required ObjectEvent that});
 
+  Future<List<PinnedObject>> crateApiUploadPackedUploadFinalize({
+    required PackedUpload that,
+  });
+
+  BigInt crateApiUploadPackedUploadLength({required PackedUpload that});
+
+  BigInt crateApiUploadPackedUploadOptimalDataSize({
+    required PackedUpload that,
+  });
+
+  BigInt crateApiUploadPackedUploadRemaining({required PackedUpload that});
+
+  BigInt crateApiUploadPackedUploadSlabs({required PackedUpload that});
+
   DateTime crateApiObjectPinnedObjectCreatedAt({required PinnedObject that});
 
   Future<PinnedObject> crateApiObjectPinnedObjectDefault();
@@ -177,12 +192,6 @@ abstract class RustLibApi extends BaseApi {
   Future<void> crateApiSdkSdkDeleteObject({
     required Sdk that,
     required String key,
-  });
-
-  Stream<Uint8List> crateApiSdkSdkDownload({
-    required Sdk that,
-    required PinnedObject object,
-    required DownloadOptions options,
   });
 
   Future<List<Host>> crateApiSdkSdkHosts({required Sdk that});
@@ -226,13 +235,6 @@ abstract class RustLibApi extends BaseApi {
     required PinnedObject object,
   });
 
-  Future<PinnedObject> crateApiSdkSdkUpload({
-    required Sdk that,
-    required PinnedObject object,
-    required FutureOr<Uint8List?> Function() source,
-    required UploadOptions options,
-  });
-
   UploadOptions crateApiOptionsUploadOptionsNew({
     int? dataShards,
     int? parityShards,
@@ -243,6 +245,12 @@ abstract class RustLibApi extends BaseApi {
     required UploadOptions that,
   });
 
+  Stream<Uint8List> crateApiSdkDownload({
+    required Sdk sdk,
+    required PinnedObject object,
+    required DownloadOptions options,
+  });
+
   BigInt crateApiObjectEncodedSize({
     required BigInt size,
     required int dataShards,
@@ -250,6 +258,23 @@ abstract class RustLibApi extends BaseApi {
   });
 
   String crateApiKeysGenerateRecoveryPhrase();
+
+  Future<BigInt> crateApiUploadPackedUploadAdd({
+    required PackedUpload upload,
+    required FutureOr<Uint8List?> Function() source,
+  });
+
+  Future<PinnedObject> crateApiSdkUpload({
+    required Sdk sdk,
+    required PinnedObject object,
+    required FutureOr<Uint8List?> Function() source,
+    required UploadOptions options,
+  });
+
+  PackedUpload crateApiSdkUploadPacked({
+    required Sdk sdk,
+    required UploadOptions options,
+  });
 
   void crateApiKeysValidateRecoveryPhrase({required String phrase});
 
@@ -281,6 +306,14 @@ abstract class RustLibApi extends BaseApi {
   get rust_arc_decrement_strong_count_ObjectEvent;
 
   CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ObjectEventPtr;
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_PackedUpload;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_PackedUpload;
+
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_PackedUploadPtr;
 
   RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_PinnedObject;
@@ -850,6 +883,155 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<List<PinnedObject>> crateApiUploadPackedUploadFinalize({
+    required PackedUpload that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 18,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiUploadPackedUploadFinalizeConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiUploadPackedUploadFinalizeConstMeta =>
+      const TaskConstMeta(
+        debugName: "PackedUpload_finalize",
+        argNames: ["that"],
+      );
+
+  @override
+  BigInt crateApiUploadPackedUploadLength({required PackedUpload that}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+            that,
+            serializer,
+          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 19)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_u_64,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiUploadPackedUploadLengthConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiUploadPackedUploadLengthConstMeta =>
+      const TaskConstMeta(debugName: "PackedUpload_length", argNames: ["that"]);
+
+  @override
+  BigInt crateApiUploadPackedUploadOptimalDataSize({
+    required PackedUpload that,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+            that,
+            serializer,
+          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 20)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_u_64,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiUploadPackedUploadOptimalDataSizeConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiUploadPackedUploadOptimalDataSizeConstMeta =>
+      const TaskConstMeta(
+        debugName: "PackedUpload_optimal_data_size",
+        argNames: ["that"],
+      );
+
+  @override
+  BigInt crateApiUploadPackedUploadRemaining({required PackedUpload that}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+            that,
+            serializer,
+          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 21)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_u_64,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiUploadPackedUploadRemainingConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiUploadPackedUploadRemainingConstMeta =>
+      const TaskConstMeta(
+        debugName: "PackedUpload_remaining",
+        argNames: ["that"],
+      );
+
+  @override
+  BigInt crateApiUploadPackedUploadSlabs({required PackedUpload that}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+            that,
+            serializer,
+          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 22)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_u_64,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiUploadPackedUploadSlabsConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiUploadPackedUploadSlabsConstMeta =>
+      const TaskConstMeta(debugName: "PackedUpload_slabs", argNames: ["that"]);
+
+  @override
   DateTime crateApiObjectPinnedObjectCreatedAt({required PinnedObject that}) {
     return handler.executeSync(
       SyncTask(
@@ -859,7 +1041,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 18)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 23)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_Chrono_Utc,
@@ -887,7 +1069,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 19,
+            funcId: 24,
             port: port_,
           );
         },
@@ -916,7 +1098,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 20)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 25)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_u_64,
@@ -945,7 +1127,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 21)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 26)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -971,7 +1153,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 22)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 27)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_prim_u_8_strict,
@@ -996,7 +1178,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 23)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 28)!;
         },
         codec: SseCodec(
           decodeSuccessData:
@@ -1027,7 +1209,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_box_autoadd_sealed_object(sealed, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 24)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 29)!;
         },
         codec: SseCodec(
           decodeSuccessData:
@@ -1064,7 +1246,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             appKey,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 25)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 30)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_sealed_object,
@@ -1093,7 +1275,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 26)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 31)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_u_64,
@@ -1119,7 +1301,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 27)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 32)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_slab,
@@ -1149,7 +1331,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_list_prim_u_8_loose(metadata, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 28)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 33)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
@@ -1178,7 +1360,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 29)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 34)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_Chrono_Utc,
@@ -1210,7 +1392,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 30,
+            funcId: 35,
             port: port_,
           );
         },
@@ -1238,7 +1420,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 31)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 36)!;
         },
         codec: SseCodec(
           decodeSuccessData:
@@ -1272,7 +1454,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 32,
+            funcId: 37,
             port: port_,
           );
         },
@@ -1293,56 +1475,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
-  Stream<Uint8List> crateApiSdkSdkDownload({
-    required Sdk that,
-    required PinnedObject object,
-    required DownloadOptions options,
-  }) {
-    final sink = RustStreamSink<Uint8List>();
-    unawaited(
-      handler.executeNormal(
-        NormalTask(
-          callFfi: (port_) {
-            final serializer = SseSerializer(generalizedFrbRustBinding);
-            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSdk(
-              that,
-              serializer,
-            );
-            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
-              object,
-              serializer,
-            );
-            sse_encode_StreamSink_list_prim_u_8_strict_Sse(sink, serializer);
-            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadOptions(
-              options,
-              serializer,
-            );
-            pdeCallFfi(
-              generalizedFrbRustBinding,
-              serializer,
-              funcId: 33,
-              port: port_,
-            );
-          },
-          codec: SseCodec(
-            decodeSuccessData: sse_decode_unit,
-            decodeErrorData: sse_decode_AnyhowException,
-          ),
-          constMeta: kCrateApiSdkSdkDownloadConstMeta,
-          argValues: [that, object, sink, options],
-          apiImpl: this,
-        ),
-      ),
-    );
-    return sink.stream;
-  }
-
-  TaskConstMeta get kCrateApiSdkSdkDownloadConstMeta => const TaskConstMeta(
-    debugName: "Sdk_download",
-    argNames: ["that", "object", "sink", "options"],
-  );
-
-  @override
   Future<List<Host>> crateApiSdkSdkHosts({required Sdk that}) {
     return handler.executeNormal(
       NormalTask(
@@ -1355,7 +1487,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 34,
+            funcId: 38,
             port: port_,
           );
         },
@@ -1390,7 +1522,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 35,
+            funcId: 39,
             port: port_,
           );
         },
@@ -1428,7 +1560,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 36,
+            funcId: 40,
             port: port_,
           );
         },
@@ -1469,7 +1601,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 37,
+            funcId: 41,
             port: port_,
           );
         },
@@ -1502,7 +1634,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 38,
+            funcId: 42,
             port: port_,
           );
         },
@@ -1539,7 +1671,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_Chrono_Utc(validUntil, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 39)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 43)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -1574,7 +1706,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 40,
+            funcId: 44,
             port: port_,
           );
         },
@@ -1612,7 +1744,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 41,
+            funcId: 45,
             port: port_,
           );
         },
@@ -1650,7 +1782,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 42,
+            funcId: 46,
             port: port_,
           );
         },
@@ -1672,57 +1804,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<PinnedObject> crateApiSdkSdkUpload({
-    required Sdk that,
-    required PinnedObject object,
-    required FutureOr<Uint8List?> Function() source,
-    required UploadOptions options,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSdk(
-            that,
-            serializer,
-          );
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
-            object,
-            serializer,
-          );
-          sse_encode_DartFn_Inputs__Output_opt_list_prim_u_8_strict_AnyhowException(
-            source,
-            serializer,
-          );
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUploadOptions(
-            options,
-            serializer,
-          );
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 43,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData:
-              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiSdkSdkUploadConstMeta,
-        argValues: [that, object, source, options],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiSdkSdkUploadConstMeta => const TaskConstMeta(
-    debugName: "Sdk_upload",
-    argNames: ["that", "object", "source", "options"],
-  );
-
-  @override
   UploadOptions crateApiOptionsUploadOptionsNew({
     int? dataShards,
     int? parityShards,
@@ -1735,7 +1816,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_opt_box_autoadd_u_8(dataShards, serializer);
           sse_encode_opt_box_autoadd_u_8(parityShards, serializer);
           sse_encode_opt_box_autoadd_u_32(maxInflight, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 44)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 47)!;
         },
         codec: SseCodec(
           decodeSuccessData:
@@ -1773,7 +1854,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 45,
+              funcId: 48,
               port: port_,
             );
           },
@@ -1797,6 +1878,56 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Stream<Uint8List> crateApiSdkDownload({
+    required Sdk sdk,
+    required PinnedObject object,
+    required DownloadOptions options,
+  }) {
+    final sink = RustStreamSink<Uint8List>();
+    unawaited(
+      handler.executeNormal(
+        NormalTask(
+          callFfi: (port_) {
+            final serializer = SseSerializer(generalizedFrbRustBinding);
+            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSdk(
+              sdk,
+              serializer,
+            );
+            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
+              object,
+              serializer,
+            );
+            sse_encode_StreamSink_list_prim_u_8_strict_Sse(sink, serializer);
+            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDownloadOptions(
+              options,
+              serializer,
+            );
+            pdeCallFfi(
+              generalizedFrbRustBinding,
+              serializer,
+              funcId: 49,
+              port: port_,
+            );
+          },
+          codec: SseCodec(
+            decodeSuccessData: sse_decode_unit,
+            decodeErrorData: sse_decode_AnyhowException,
+          ),
+          constMeta: kCrateApiSdkDownloadConstMeta,
+          argValues: [sdk, object, sink, options],
+          apiImpl: this,
+        ),
+      ),
+    );
+    return sink.stream;
+  }
+
+  TaskConstMeta get kCrateApiSdkDownloadConstMeta => const TaskConstMeta(
+    debugName: "download",
+    argNames: ["sdk", "object", "sink", "options"],
+  );
+
+  @override
   BigInt crateApiObjectEncodedSize({
     required BigInt size,
     required int dataShards,
@@ -1809,7 +1940,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_u_64(size, serializer);
           sse_encode_u_8(dataShards, serializer);
           sse_encode_u_8(parityShards, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 46)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 50)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_u_64,
@@ -1833,7 +1964,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 47)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 51)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -1850,13 +1981,141 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "generate_recovery_phrase", argNames: []);
 
   @override
+  Future<BigInt> crateApiUploadPackedUploadAdd({
+    required PackedUpload upload,
+    required FutureOr<Uint8List?> Function() source,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+            upload,
+            serializer,
+          );
+          sse_encode_DartFn_Inputs__Output_opt_list_prim_u_8_strict_AnyhowException(
+            source,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 52,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_u_64,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiUploadPackedUploadAddConstMeta,
+        argValues: [upload, source],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiUploadPackedUploadAddConstMeta =>
+      const TaskConstMeta(
+        debugName: "packed_upload_add",
+        argNames: ["upload", "source"],
+      );
+
+  @override
+  Future<PinnedObject> crateApiSdkUpload({
+    required Sdk sdk,
+    required PinnedObject object,
+    required FutureOr<Uint8List?> Function() source,
+    required UploadOptions options,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSdk(
+            sdk,
+            serializer,
+          );
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
+            object,
+            serializer,
+          );
+          sse_encode_DartFn_Inputs__Output_opt_list_prim_u_8_strict_AnyhowException(
+            source,
+            serializer,
+          );
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUploadOptions(
+            options,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 53,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiSdkUploadConstMeta,
+        argValues: [sdk, object, source, options],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSdkUploadConstMeta => const TaskConstMeta(
+    debugName: "upload",
+    argNames: ["sdk", "object", "source", "options"],
+  );
+
+  @override
+  PackedUpload crateApiSdkUploadPacked({
+    required Sdk sdk,
+    required UploadOptions options,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSdk(
+            sdk,
+            serializer,
+          );
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUploadOptions(
+            options,
+            serializer,
+          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 54)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiSdkUploadPackedConstMeta,
+        argValues: [sdk, options],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSdkUploadPackedConstMeta => const TaskConstMeta(
+    debugName: "upload_packed",
+    argNames: ["sdk", "options"],
+  );
+
+  @override
   void crateApiKeysValidateRecoveryPhrase({required String phrase}) {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(phrase, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 48)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 55)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
@@ -1941,6 +2200,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerObjectEvent;
 
   RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_PackedUpload => wire
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_PackedUpload => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload;
+
+  RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_PinnedObject => wire
       .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject;
 
@@ -2007,6 +2274,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PackedUpload
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return PackedUploadImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
   PinnedObject
   dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
     dynamic raw,
@@ -2067,6 +2343,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return ObjectEventImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  PackedUpload
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return PackedUploadImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -2151,6 +2436,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return ObjectEventImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  PackedUpload
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return PackedUploadImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -2370,6 +2664,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     return (raw as List<dynamic>)
         .map(
           dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerObjectEvent,
+        )
+        .toList();
+  }
+
+  @protected
+  List<PinnedObject>
+  dco_decode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>)
+        .map(
+          dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject,
         )
         .toList();
   }
@@ -2657,6 +2964,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PackedUpload
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return PackedUploadImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
   PinnedObject
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
     SseDeserializer deserializer,
@@ -2735,6 +3054,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return ObjectEventImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  PackedUpload
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return PackedUploadImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
@@ -2833,6 +3164,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return ObjectEventImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  PackedUpload
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return PackedUploadImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
@@ -3088,6 +3431,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(
         sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerObjectEvent(
+          deserializer,
+        ),
+      );
+    }
+    return ans_;
+  }
+
+  @protected
+  List<PinnedObject>
+  sse_decode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <PinnedObject>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(
+        sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
           deserializer,
         ),
       );
@@ -3451,6 +3813,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+    PackedUpload self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as PackedUploadImpl).frbInternalSseEncode(move: true),
+      serializer,
+    );
+  }
+
+  @protected
+  void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
     PinnedObject self,
     SseSerializer serializer,
@@ -3536,6 +3911,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
       (self as ObjectEventImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+    PackedUpload self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as PackedUploadImpl).frbInternalSseEncode(move: false),
       serializer,
     );
   }
@@ -3666,6 +4054,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
       (self as ObjectEventImpl).frbInternalSseEncode(move: null),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPackedUpload(
+    PackedUpload self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as PackedUploadImpl).frbInternalSseEncode(move: null),
       serializer,
     );
   }
@@ -3914,6 +4315,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerObjectEvent(
+        item,
+        serializer,
+      );
+    }
+  }
+
+  @protected
+  void
+  sse_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
+    List<PinnedObject> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
         item,
         serializer,
       );
@@ -4321,6 +4738,50 @@ class ObjectEventImpl extends RustOpaque implements ObjectEvent {
 }
 
 @sealed
+class PackedUploadImpl extends RustOpaque implements PackedUpload {
+  // Not to be used by end users
+  PackedUploadImpl.frbInternalDcoDecode(List<dynamic> wire)
+    : super.frbInternalDcoDecode(wire, _kStaticData);
+
+  // Not to be used by end users
+  PackedUploadImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+    : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_PackedUpload,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_PackedUpload,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_PackedUploadPtr,
+  );
+
+  /// Finalizes the upload, flushing all packed slabs to hosts, and returns
+  /// the resulting objects in the order they were added. The objects must be
+  /// pinned to the indexer afterwards. The handle cannot be used again.
+  Future<List<PinnedObject>> finalize() =>
+      RustLib.instance.api.crateApiUploadPackedUploadFinalize(that: this);
+
+  /// Returns the cumulative length in bytes of all objects added so far.
+  BigInt length() =>
+      RustLib.instance.api.crateApiUploadPackedUploadLength(that: this);
+
+  /// Returns the optimal size in bytes of each packed slab.
+  BigInt optimalDataSize() => RustLib.instance.api
+      .crateApiUploadPackedUploadOptimalDataSize(that: this);
+
+  /// Returns the number of bytes remaining until the current slab reaches its
+  /// optimal packed size. Adding an object larger than this starts a new
+  /// slab; prioritize objects that fit to minimize padding.
+  BigInt remaining() =>
+      RustLib.instance.api.crateApiUploadPackedUploadRemaining(that: this);
+
+  /// Returns the number of slabs the upload will produce once finalized.
+  BigInt slabs() =>
+      RustLib.instance.api.crateApiUploadPackedUploadSlabs(that: this);
+}
+
+@sealed
 class PinnedObjectImpl extends RustOpaque implements PinnedObject {
   // Not to be used by end users
   PinnedObjectImpl.frbInternalDcoDecode(List<dynamic> wire)
@@ -4405,16 +4866,6 @@ class SdkImpl extends RustOpaque implements Sdk {
   Future<void> deleteObject({required String key}) =>
       RustLib.instance.api.crateApiSdkSdkDeleteObject(that: this, key: key);
 
-  /// Downloads an object from the Sia network as a stream of byte chunks.
-  Stream<Uint8List> download({
-    required PinnedObject object,
-    required DownloadOptions options,
-  }) => RustLib.instance.api.crateApiSdkSdkDownload(
-    that: this,
-    object: object,
-    options: options,
-  );
-
   /// Returns a list of all usable hosts.
   Future<List<Host>> hosts() =>
       RustLib.instance.api.crateApiSdkSdkHosts(that: this);
@@ -4466,25 +4917,6 @@ class SdkImpl extends RustOpaque implements Sdk {
       .instance
       .api
       .crateApiSdkSdkUpdateObjectMetadata(that: this, object: object);
-
-  /// Uploads an object to the Sia network by streaming bytes from a Dart
-  /// pull callback. The callback returns the next chunk; an empty or `null`
-  /// result signals EOF.
-  ///
-  /// Pass a fresh [PinnedObject::new] for new uploads. To resume or append
-  /// to a previous upload, pass the object returned from the prior call.
-  /// Note that appending changes the object's ID; the object must be
-  /// re-pinned afterwards and any cached references updated.
-  Future<PinnedObject> upload({
-    required PinnedObject object,
-    required FutureOr<Uint8List?> Function() source,
-    required UploadOptions options,
-  }) => RustLib.instance.api.crateApiSdkSdkUpload(
-    that: this,
-    object: object,
-    source: source,
-    options: options,
-  );
 }
 
 @sealed

@@ -9,8 +9,47 @@ import 'object.dart';
 import 'options.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'types.dart';
+import 'upload.dart';
 
 // These functions are ignored because they are not marked as `pub`: `account_from_native`, `host_from_native`, `pinned_slab_from_native`
+
+/// Uploads an object to the Sia network by streaming bytes from a Dart pull
+/// callback. The callback returns the next chunk; an empty or `null` result
+/// signals EOF.
+///
+/// Pass a fresh [PinnedObject::new] for new uploads. To resume or append to a
+/// previous upload, pass the object returned from the prior call. Note that
+/// appending changes the object's ID; the object must be re-pinned afterwards
+/// and any cached references updated.
+Future<PinnedObject> upload({
+  required Sdk sdk,
+  required PinnedObject object,
+  required FutureOr<Uint8List?> Function() source,
+  required UploadOptions options,
+}) => RustLib.instance.api.crateApiSdkUpload(
+  sdk: sdk,
+  object: object,
+  source: source,
+  options: options,
+);
+
+/// Begins a packed upload, batching multiple small objects into shared slabs
+/// to avoid the per-object padding of [upload]. Add objects with
+/// [packed_upload_add](super::upload::packed_upload_add) and complete the
+/// upload with [PackedUpload::finalize](super::upload::PackedUpload::finalize).
+PackedUpload uploadPacked({required Sdk sdk, required UploadOptions options}) =>
+    RustLib.instance.api.crateApiSdkUploadPacked(sdk: sdk, options: options);
+
+/// Downloads an object from the Sia network as a stream of byte chunks.
+Stream<Uint8List> download({
+  required Sdk sdk,
+  required PinnedObject object,
+  required DownloadOptions options,
+}) => RustLib.instance.api.crateApiSdkDownload(
+  sdk: sdk,
+  object: object,
+  options: options,
+);
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Sdk>>
 abstract class Sdk implements RustOpaqueInterface {
@@ -22,12 +61,6 @@ abstract class Sdk implements RustOpaqueInterface {
 
   /// Deletes an object from the indexer.
   Future<void> deleteObject({required String key});
-
-  /// Downloads an object from the Sia network as a stream of byte chunks.
-  Stream<Uint8List> download({
-    required PinnedObject object,
-    required DownloadOptions options,
-  });
 
   /// Returns a list of all usable hosts.
   Future<List<Host>> hosts();
@@ -61,18 +94,4 @@ abstract class Sdk implements RustOpaqueInterface {
 
   /// Updates the metadata of an object stored in the indexer.
   Future<void> updateObjectMetadata({required PinnedObject object});
-
-  /// Uploads an object to the Sia network by streaming bytes from a Dart
-  /// pull callback. The callback returns the next chunk; an empty or `null`
-  /// result signals EOF.
-  ///
-  /// Pass a fresh [PinnedObject::new] for new uploads. To resume or append
-  /// to a previous upload, pass the object returned from the prior call.
-  /// Note that appending changes the object's ID; the object must be
-  /// re-pinned afterwards and any cached references updated.
-  Future<PinnedObject> upload({
-    required PinnedObject object,
-    required FutureOr<Uint8List?> Function() source,
-    required UploadOptions options,
-  });
 }

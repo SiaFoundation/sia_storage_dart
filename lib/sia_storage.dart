@@ -23,13 +23,16 @@ import 'src/rust/api/keys.dart' as raw_keys;
 import 'src/rust/api/object.dart';
 import 'src/rust/api/options.dart' as raw_options;
 import 'src/rust/api/sdk.dart';
+import 'src/rust/api/sdk.dart' as raw_sdk;
 import 'src/rust/api/types.dart';
+import 'src/rust/api/upload.dart';
 import 'src/rust/frb_generated.dart' show RustLib;
 
 export 'src/rust/api/builder.dart' show Builder;
 export 'src/rust/api/keys.dart' show AppKey;
 export 'src/rust/api/object.dart' show ObjectEvent, PinnedObject, encodedSize;
 export 'src/rust/api/sdk.dart' show Sdk;
+export 'src/rust/api/upload.dart' show PackedUpload;
 export 'src/rust/api/types.dart'
     show
         Account,
@@ -152,11 +155,26 @@ class Download {
   Download._(this.data, this.progress);
 }
 
+/// Handle for an in-flight packed upload. Subscribe to [progress] before
+/// adding objects to avoid missing early events. Add objects to [upload] via
+/// [PackedUploadStreams.add], then await [PackedUpload.finalize] to
+/// obtain the pinned objects.
+class PackedUploadSession {
+  /// The packed upload to add objects to and finalize.
+  final PackedUpload upload;
+
+  /// Per-shard progress events across all packed objects. Closes when the
+  /// upload is finalized.
+  final Stream<ShardProgress> progress;
+
+  PackedUploadSession._(this.upload, this.progress);
+}
+
 /// Stream-friendly upload and download helpers.
 extension SdkStreams on Sdk {
   /// Uploads an object by streaming bytes from `source` (e.g.
   /// `File.openRead()`).
-  Upload uploadStream({
+  Upload upload({
     required PinnedObject object,
     required Stream<List<int>> source,
     UploadOptions options = const UploadOptions(),
@@ -168,7 +186,8 @@ extension SdkStreams on Sdk {
     );
     final progress = raw.shardProgress();
     final iterator = StreamIterator<List<int>>(source);
-    final result = upload(
+    final result = raw_sdk.upload(
+      sdk: this,
       object: object,
       source: () async {
         if (!await iterator.moveNext()) return null;
@@ -181,7 +200,7 @@ extension SdkStreams on Sdk {
   }
 
   /// Downloads an object's bytes.
-  Download downloadStream({
+  Download download({
     required PinnedObject object,
     DownloadOptions options = const DownloadOptions(),
   }) {
@@ -191,7 +210,41 @@ extension SdkStreams on Sdk {
       length: options.length,
     );
     final progress = raw.shardProgress();
-    final data = download(object: object, options: raw);
+    final data = raw_sdk.download(sdk: this, object: object, options: raw);
     return Download._(data, progress);
+  }
+
+  /// Begins a packed upload, batching multiple small objects into shared slabs
+  /// to avoid the per-object padding of [upload]. Add objects to the
+  /// returned [PackedUploadSession.upload], then finalize it to obtain the
+  /// pinned objects.
+  PackedUploadSession uploadPacked({
+    UploadOptions options = const UploadOptions(),
+  }) {
+    final raw = raw_options.UploadOptions(
+      dataShards: options.dataShards,
+      parityShards: options.parityShards,
+      maxInflight: options.maxInflight,
+    );
+    final progress = raw.shardProgress();
+    final upload = raw_sdk.uploadPacked(sdk: this, options: raw);
+    return PackedUploadSession._(upload, progress);
+  }
+}
+
+/// Stream-friendly helper for adding objects to a [PackedUpload].
+extension PackedUploadStreams on PackedUpload {
+  /// Adds an object by streaming bytes from `source` (e.g.
+  /// `File.openRead()`). Returns the number of bytes consumed.
+  Future<BigInt> add(Stream<List<int>> source) {
+    final iterator = StreamIterator<List<int>>(source);
+    return packedUploadAdd(
+      upload: this,
+      source: () async {
+        if (!await iterator.moveNext()) return null;
+        final chunk = iterator.current;
+        return chunk is Uint8List ? chunk : Uint8List.fromList(chunk);
+      },
+    );
   }
 }

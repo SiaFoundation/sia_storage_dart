@@ -16,7 +16,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 flutter_rust_bridge_codegen build-web --release --wasm-pack-rustflags \
-  '--cfg getrandom_backend="wasm_js" -C target-feature=+atomics,+bulk-memory,+mutable-globals -C link-args=--shared-memory --cfg=web_sys_unstable_apis'
+  '--cfg getrandom_backend="wasm_js" -C target-feature=+atomics,+bulk-memory,+mutable-globals,+simd128 -C link-args=--shared-memory --cfg=web_sys_unstable_apis'
 
 # wasm-pack drops a `.gitignore: *` into pkg/ that would also exclude the
 # bundle from `dart pub publish`. We need these files in the published
