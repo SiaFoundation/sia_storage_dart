@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.3.0 (2026-07-16)
+
+### Breaking Changes
+
+#### Rename `maxInflight` options to `maxBufferedSlabs`/`maxBufferedChunks`
+
+sia_storage 0.10 replaces the concurrency-based `max_inflight` knob with memory-based buffering limits, and the option classes follow suit: `UploadOptions.maxInflight` is now `maxBufferedSlabs` (maximum slabs held in memory) and `DownloadOptions.maxInflight` is now `maxBufferedChunks` (maximum ~1 MiB chunks held in memory). Both default to 10% of system memory when unset.
+
+```dart
+// before
+UploadOptions(dataShards: 10, parityShards: 20, maxInflight: 15);
+DownloadOptions(maxInflight: 80);
+
+// after
+UploadOptions(dataShards: 10, parityShards: 20, maxBufferedSlabs: 15);
+DownloadOptions(maxBufferedChunks: 80);
+```
+
+### Features
+
+#### Update `sia_storage` to 0.10.0
+
+Also updates the Dart dependencies (`hooks` 2.x, `code_assets` 1.2) and bumps the pinned Rust toolchain to 1.96.1, required by sia_storage 0.10's MSRV — consumer hook builds fetch it automatically via `rust-toolchain.toml`.
+
+### Fixes
+
+#### Fix Flutter Web bundle shipping with a mismatched content hash
+
+0.2.0 shipped a stale `web/pkg` wasm whose `frb_get_rust_content_hash` did not match the Dart bindings, so flutter_rust_bridge refused to initialize in browsers ("content hash doesn't match Rust"). `tool/build_web.sh` now rebuilds the bundle from a clean slate — stale output is removed and the bindings are regenerated with `flutter_rust_bridge_codegen` pinned to the runtime version — and the publish workflow builds from the clean tag checkout and verifies the regenerated bindings match the release commit before publishing.
+
 ## 0.2.0 (2026-05-29)
 
 ### Breaking Changes
