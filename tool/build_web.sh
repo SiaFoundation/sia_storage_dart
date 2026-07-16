@@ -40,6 +40,12 @@ fi
 
 rm -rf web/pkg
 
+# frb formats the generated bindings with rustfmt, resolved against the
+# toolchain pinned in rust/rust-toolchain.toml. When rustfmt is missing frb
+# only warns and emits unformatted code that won't match the committed
+# bindings — fail loudly here instead.
+(cd rust && rustfmt --version >/dev/null)
+
 flutter_rust_bridge_codegen generate
 
 # Current rust-lld no longer implies `--import-memory` under

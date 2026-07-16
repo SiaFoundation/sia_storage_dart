@@ -31,6 +31,11 @@ jobs:
           # frb needs nightly (-Z build-std for threaded wasm)
           rustup toolchain install nightly --component rust-src
           rustup target add wasm32-unknown-unknown --toolchain nightly
+          # frb generate runs rustfmt with cwd=rust/, where rust-toolchain.toml
+          # pins an exact toolchain version; without rustfmt on that toolchain
+          # frb silently emits unformatted bindings (warn-and-continue) and
+          # the verify step below fails on formatting alone.
+          rustup toolchain install "$(sed -n 's/^channel = "\(.*\)"/\1/p' rust/rust-toolchain.toml)" --profile minimal --component rustfmt
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - run: dart pub get
