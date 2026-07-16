@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /rust
+    schedule:
+      interval: weekly
+    ignore:
+      # flutter_rust_bridge must move in lockstep with the Dart dependency
+      # and the codegen pin in tool/build_web.sh (a skew breaks the frb
+      # content-hash check at runtime) — bump all three together manually.
+      - dependency-name: flutter_rust_bridge
+
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      # See the cargo note above.
+      - dependency-name: flutter_rust_bridge

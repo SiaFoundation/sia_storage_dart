@@ -121,7 +121,7 @@ abstract class RustLibApi extends BaseApi {
   Future<void> crateApiBuilderBuilderWaitForApproval({required Builder that});
 
   DownloadOptions crateApiOptionsDownloadOptionsNew({
-    int? maxInflight,
+    int? maxBufferedChunks,
     BigInt? offset,
     BigInt? length,
   });
@@ -238,7 +238,7 @@ abstract class RustLibApi extends BaseApi {
   UploadOptions crateApiOptionsUploadOptionsNew({
     int? dataShards,
     int? parityShards,
-    int? maxInflight,
+    int? maxBufferedSlabs,
   });
 
   Stream<ShardProgress> crateApiOptionsUploadOptionsShardProgress({
@@ -702,7 +702,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   DownloadOptions crateApiOptionsDownloadOptionsNew({
-    int? maxInflight,
+    int? maxBufferedChunks,
     BigInt? offset,
     BigInt? length,
   }) {
@@ -710,7 +710,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_opt_box_autoadd_u_8(maxInflight, serializer);
+          sse_encode_opt_box_autoadd_u_32(maxBufferedChunks, serializer);
           sse_encode_opt_box_autoadd_u_64(offset, serializer);
           sse_encode_opt_box_autoadd_u_64(length, serializer);
           return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 12)!;
@@ -721,7 +721,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: null,
         ),
         constMeta: kCrateApiOptionsDownloadOptionsNewConstMeta,
-        argValues: [maxInflight, offset, length],
+        argValues: [maxBufferedChunks, offset, length],
         apiImpl: this,
       ),
     );
@@ -730,7 +730,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiOptionsDownloadOptionsNewConstMeta =>
       const TaskConstMeta(
         debugName: "DownloadOptions_new",
-        argNames: ["maxInflight", "offset", "length"],
+        argNames: ["maxBufferedChunks", "offset", "length"],
       );
 
   @override
@@ -1807,7 +1807,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   UploadOptions crateApiOptionsUploadOptionsNew({
     int? dataShards,
     int? parityShards,
-    int? maxInflight,
+    int? maxBufferedSlabs,
   }) {
     return handler.executeSync(
       SyncTask(
@@ -1815,7 +1815,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_opt_box_autoadd_u_8(dataShards, serializer);
           sse_encode_opt_box_autoadd_u_8(parityShards, serializer);
-          sse_encode_opt_box_autoadd_u_32(maxInflight, serializer);
+          sse_encode_opt_box_autoadd_u_32(maxBufferedSlabs, serializer);
           return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 47)!;
         },
         codec: SseCodec(
@@ -1824,7 +1824,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: null,
         ),
         constMeta: kCrateApiOptionsUploadOptionsNewConstMeta,
-        argValues: [dataShards, parityShards, maxInflight],
+        argValues: [dataShards, parityShards, maxBufferedSlabs],
         apiImpl: this,
       ),
     );
@@ -1833,7 +1833,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiOptionsUploadOptionsNewConstMeta =>
       const TaskConstMeta(
         debugName: "UploadOptions_new",
-        argNames: ["dataShards", "parityShards", "maxInflight"],
+        argNames: ["dataShards", "parityShards", "maxBufferedSlabs"],
       );
 
   @override

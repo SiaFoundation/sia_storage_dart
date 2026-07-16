@@ -632,13 +632,13 @@ fn wire__crate__api__options__DownloadOptions_new_impl(
             };
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_max_inflight = <Option<u8>>::sse_decode(&mut deserializer);
+            let api_max_buffered_chunks = <Option<u32>>::sse_decode(&mut deserializer);
             let api_offset = <Option<u64>>::sse_decode(&mut deserializer);
             let api_length = <Option<u64>>::sse_decode(&mut deserializer);
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
                 let output_ok = Result::<_, ()>::Ok(crate::api::options::DownloadOptions::new(
-                    api_max_inflight,
+                    api_max_buffered_chunks,
                     api_offset,
                     api_length,
                 ))?;
@@ -2442,13 +2442,13 @@ fn wire__crate__api__options__UploadOptions_new_impl(
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_data_shards = <Option<u8>>::sse_decode(&mut deserializer);
             let api_parity_shards = <Option<u8>>::sse_decode(&mut deserializer);
-            let api_max_inflight = <Option<u32>>::sse_decode(&mut deserializer);
+            let api_max_buffered_slabs = <Option<u32>>::sse_decode(&mut deserializer);
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
                 let output_ok = Result::<_, ()>::Ok(crate::api::options::UploadOptions::new(
                     api_data_shards,
                     api_parity_shards,
-                    api_max_inflight,
+                    api_max_buffered_slabs,
                 ))?;
                 Ok(output_ok)
             })())

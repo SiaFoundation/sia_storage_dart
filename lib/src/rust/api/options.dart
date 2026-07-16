@@ -13,12 +13,15 @@ import 'types.dart';
 abstract class DownloadOptions implements RustOpaqueInterface {
   /// Constructs a [DownloadOptions] handle. All primitive arguments are
   /// optional; `None` keeps the SDK default.
-  factory DownloadOptions({int? maxInflight, BigInt? offset, BigInt? length}) =>
-      RustLib.instance.api.crateApiOptionsDownloadOptionsNew(
-        maxInflight: maxInflight,
-        offset: offset,
-        length: length,
-      );
+  factory DownloadOptions({
+    int? maxBufferedChunks,
+    BigInt? offset,
+    BigInt? length,
+  }) => RustLib.instance.api.crateApiOptionsDownloadOptionsNew(
+    maxBufferedChunks: maxBufferedChunks,
+    offset: offset,
+    length: length,
+  );
 
   /// Subscribe to per-shard download progress. Returns a stream that emits
   /// one event per completed shard.
@@ -32,11 +35,11 @@ abstract class UploadOptions implements RustOpaqueInterface {
   factory UploadOptions({
     int? dataShards,
     int? parityShards,
-    int? maxInflight,
+    int? maxBufferedSlabs,
   }) => RustLib.instance.api.crateApiOptionsUploadOptionsNew(
     dataShards: dataShards,
     parityShards: parityShards,
-    maxInflight: maxInflight,
+    maxBufferedSlabs: maxBufferedSlabs,
   );
 
   /// Subscribe to per-shard upload progress. Returns a stream that emits

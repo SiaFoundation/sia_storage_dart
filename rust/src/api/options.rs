@@ -17,7 +17,7 @@ use crate::frb_generated::StreamSink;
 pub struct UploadOptions {
     data_shards: Option<u8>,
     parity_shards: Option<u8>,
-    max_inflight: Option<u32>,
+    max_buffered_slabs: Option<u32>,
     progress_sink: Mutex<Option<StreamSink<ShardProgress>>>,
 }
 
@@ -33,12 +33,12 @@ impl UploadOptions {
     pub fn new(
         data_shards: Option<u8>,
         parity_shards: Option<u8>,
-        max_inflight: Option<u32>,
+        max_buffered_slabs: Option<u32>,
     ) -> Self {
         Self {
             data_shards,
             parity_shards,
-            max_inflight,
+            max_buffered_slabs,
             progress_sink: Mutex::new(None),
         }
     }
@@ -61,8 +61,8 @@ impl UploadOptions {
         if let Some(v) = self.parity_shards {
             opts.parity_shards = v;
         }
-        if let Some(v) = self.max_inflight {
-            opts.max_inflight = v as usize;
+        if let Some(v) = self.max_buffered_slabs {
+            opts.max_buffered_slabs = Some(v as usize);
         }
         let sink = self
             .progress_sink
@@ -82,7 +82,7 @@ impl UploadOptions {
 /// Options for a download, including an optional shard-progress stream.
 #[frb(opaque)]
 pub struct DownloadOptions {
-    max_inflight: Option<u8>,
+    max_buffered_chunks: Option<u32>,
     offset: Option<u64>,
     length: Option<u64>,
     progress_sink: Mutex<Option<StreamSink<ShardProgress>>>,
@@ -97,9 +97,13 @@ impl DownloadOptions {
     /// Constructs a [DownloadOptions] handle. All primitive arguments are
     /// optional; `None` keeps the SDK default.
     #[frb(sync)]
-    pub fn new(max_inflight: Option<u8>, offset: Option<u64>, length: Option<u64>) -> Self {
+    pub fn new(
+        max_buffered_chunks: Option<u32>,
+        offset: Option<u64>,
+        length: Option<u64>,
+    ) -> Self {
         Self {
-            max_inflight,
+            max_buffered_chunks,
             offset,
             length,
             progress_sink: Mutex::new(None),
@@ -118,8 +122,8 @@ impl DownloadOptions {
 
     pub(crate) fn build(&self) -> sia_storage::DownloadOptions {
         let mut opts = sia_storage::DownloadOptions::default();
-        if let Some(v) = self.max_inflight {
-            opts.max_inflight = v as usize;
+        if let Some(v) = self.max_buffered_chunks {
+            opts.max_buffered_chunks = Some(v as usize);
         }
         if let Some(v) = self.offset {
             opts.offset = v;

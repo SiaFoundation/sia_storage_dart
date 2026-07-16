@@ -103,20 +103,22 @@ class UploadOptions {
   /// The number of parity shards per slab. Defaults to 20 when null.
   final int? parityShards;
 
-  /// Maximum number of concurrent shard uploads. Defaults to 15 when null.
-  final int? maxInflight;
+  /// Maximum number of slabs to hold in memory. Defaults to 10% of system
+  /// memory when null.
+  final int? maxBufferedSlabs;
 
   const UploadOptions({
     this.dataShards,
     this.parityShards,
-    this.maxInflight,
+    this.maxBufferedSlabs,
   });
 }
 
 /// Download configuration. `const`-constructible.
 class DownloadOptions {
-  /// Maximum number of concurrent chunk downloads. Defaults to 80 when null.
-  final int? maxInflight;
+  /// Maximum number of chunks (~1 MiB each) to hold in memory. Defaults to
+  /// 10% of system memory when null.
+  final int? maxBufferedChunks;
 
   /// Byte offset to start downloading from. Defaults to 0 when null.
   final BigInt? offset;
@@ -125,7 +127,7 @@ class DownloadOptions {
   final BigInt? length;
 
   const DownloadOptions({
-    this.maxInflight,
+    this.maxBufferedChunks,
     this.offset,
     this.length,
   });
@@ -182,7 +184,7 @@ extension SdkStreams on Sdk {
     final raw = raw_options.UploadOptions(
       dataShards: options.dataShards,
       parityShards: options.parityShards,
-      maxInflight: options.maxInflight,
+      maxBufferedSlabs: options.maxBufferedSlabs,
     );
     final progress = raw.shardProgress();
     final iterator = StreamIterator<List<int>>(source);
@@ -205,7 +207,7 @@ extension SdkStreams on Sdk {
     DownloadOptions options = const DownloadOptions(),
   }) {
     final raw = raw_options.DownloadOptions(
-      maxInflight: options.maxInflight,
+      maxBufferedChunks: options.maxBufferedChunks,
       offset: options.offset,
       length: options.length,
     );
@@ -224,7 +226,7 @@ extension SdkStreams on Sdk {
     final raw = raw_options.UploadOptions(
       dataShards: options.dataShards,
       parityShards: options.parityShards,
-      maxInflight: options.maxInflight,
+      maxBufferedSlabs: options.maxBufferedSlabs,
     );
     final progress = raw.shardProgress();
     final upload = raw_sdk.uploadPacked(sdk: this, options: raw);

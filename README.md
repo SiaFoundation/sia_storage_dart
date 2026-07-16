@@ -8,7 +8,7 @@ Powered by [`flutter_rust_bridge`](https://pub.dev/packages/flutter_rust_bridge)
 
 ```yaml
 dependencies:
-  sia_storage_flutter: ^0.1.0
+  sia_storage_flutter: ^0.3.0
 ```
 
 The native library is compiled at consumer build time via a Dart build hook, so all consumers need a working Rust toolchain (`rustup`) on their build machine or in CI.

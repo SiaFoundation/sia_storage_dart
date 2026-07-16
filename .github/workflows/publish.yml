@@ -1,7 +1,7 @@
 name: Publish
 
 # Triggered when knope's `release` job pushes a vX.Y.Z tag. Builds the
-# wasm bundle and publishes the package to pub.dev via OIDC trusted
+# wasm bundle and publishes the package to pub.dev via OIDC trusted 
 # publishing.
 #
 # Pub.dev requires the publishing workflow to be triggered by a tag push:
@@ -28,14 +28,23 @@ jobs:
         run: |
           rustup update stable
           rustup target add wasm32-unknown-unknown
-          # frb needs nightly
+          # frb needs nightly (-Z build-std for threaded wasm)
           rustup toolchain install nightly --component rust-src
           rustup target add wasm32-unknown-unknown --toolchain nightly
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-          cargo install flutter_rust_bridge_codegen
 
+      - run: dart pub get
+
+      # Installs flutter_rust_bridge_codegen pinned to the runtime version,
+      # regenerates the bindings, and builds web/pkg from them.
       - name: Build wasm bundle
         run: tool/build_web.sh
+
+      # build_web.sh regenerated the bindings; if that changed anything vs
+      # the reviewed release commit, the tarball wouldn't match what was
+      # reviewed (codegen drift or a stale committed side) — bail.
+      - name: Verify regenerated bindings match the release commit
+        run: git diff --exit-code
 
       - name: dart pub publish
         run: dart pub publish --force
