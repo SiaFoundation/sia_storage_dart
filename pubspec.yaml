@@ -2,7 +2,7 @@ name: sia_storage
 description: >-
   Dart bindings for the Sia Storage SDK. Upload, download, and pin objects on
   the Sia network from Flutter and pure Dart applications.
-version: 0.3.0
+version: 0.3.1
 repository: https://github.com/SiaFoundation/sia_storage_dart
 issue_tracker: https://github.com/SiaFoundation/sia_storage_dart/issues
 topics:
