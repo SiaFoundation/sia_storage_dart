@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: 
+      - main
+  pull_request:
+
+jobs:
+  # Flutter pins several packages (meta, collection, ...) at exact versions
+  # via the SDK, so a dependency constraint can conflict with those pins and
+  # make the package unresolvable for Flutter apps even though plain
+  # `dart pub get` succeeds — 0.3.0 shipped like that (hooks 2.1.0 requires
+  # meta ^1.19.0 vs Flutter stable's pinned meta 1.17.0). Resolve the
+  # package from a scratch Flutter app to catch it here instead.
+  flutter-resolvable:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - uses: subosito/flutter-action@1508160852fb97248640997f7cfb38da241df0ba # v2.9.1
+        with:
+          channel: stable
+
+      - name: Check resolvability against Flutter stable
+        run: |
+          mkdir -p "$RUNNER_TEMP/consumer/lib"
+          cat > "$RUNNER_TEMP/consumer/pubspec.yaml" <<EOF
+          name: consumer
+          environment:
+            sdk: ^3.10.0
+          dependencies:
+            flutter:
+              sdk: flutter
+            sia_storage:
+              path: $GITHUB_WORKSPACE
+          dev_dependencies:
+            flutter_test:
+              sdk: flutter
+          EOF
+          cd "$RUNNER_TEMP/consumer"
+          flutter pub get

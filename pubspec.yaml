@@ -18,7 +18,10 @@ environment:
 dependencies:
   flutter_rust_bridge: ^2.12.0
   # Used from hook/build.dart; pub requires hook deps in `dependencies`.
-  hooks: ^2.1.0
+  # <2.1.0: hooks 2.1.0 needs meta ^1.19.0, which conflicts with the meta
+  # 1.17.0 pinned by Flutter stable (3.41.x) and made 0.3.0 unresolvable
+  # for Flutter consumers.
+  hooks: ">=2.0.2 <2.1.0"
   native_toolchain_rust: ^1.0.0
 
 dev_dependencies:
