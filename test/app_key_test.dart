@@ -19,12 +19,12 @@ void main() {
     );
   });
 
-  test('AppKey export is 32 bytes and round-trips', () {
+  test('AppKey save is 32 bytes and round-trips', () {
     final seed = List<int>.filled(32, 7);
     final ak = AppKey(key: seed);
-    final exported = ak.export_();
-    expect(exported.length, 32);
-    expect(exported, equals(seed));
+    final saved = ak.save();
+    expect(saved.length, 32);
+    expect(saved, equals(seed));
   });
 
   test('AppKey rejects non-32-byte input', () {

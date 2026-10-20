@@ -15,8 +15,8 @@ use super::types::{Host, KeyStats, ObjectSummary};
 use crate::frb_generated::StreamSink;
 
 /// Read-only access to the objects attached to a sharing key, paid for by
-/// the key's owner. Connect with [SharedSdk::connect] using a seed exported
-/// from [SharingKey::export](super::keys::SharingKey::export).
+/// the key's owner. Connect with [SharedSdk::connect] using a seed from
+/// [SharingKey::save](super::keys::SharingKey::save).
 #[frb(opaque)]
 pub struct SharedSdk {
     pub(crate) inner: sia_storage::SharedSdk,

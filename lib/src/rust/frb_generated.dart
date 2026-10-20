@@ -71,7 +71,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 1092084741;
+  int get rustContentHash => 1838801817;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -83,11 +83,11 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
-  Uint8List crateApiKeysAppKeyExport({required AppKey that});
-
   AppKey crateApiKeysAppKeyNew({required List<int> key});
 
   String crateApiKeysAppKeyPublicKey({required AppKey that});
+
+  Uint8List crateApiKeysAppKeySave({required AppKey that});
 
   Uint8List crateApiKeysAppKeySign({
     required AppKey that,
@@ -324,11 +324,11 @@ abstract class RustLibApi extends BaseApi {
 
   KeyStats crateApiKeysSharingKeyRecordStats({required SharingKeyRecord that});
 
-  Uint8List crateApiKeysSharingKeyExport({required SharingKey that});
-
   SharingKey crateApiKeysSharingKeyNew({required List<int> seed});
 
   String crateApiKeysSharingKeyPublicKey({required SharingKey that});
+
+  Uint8List crateApiKeysSharingKeySave({required SharingKey that});
 
   UploadOptions crateApiOptionsUploadOptionsNew({
     int? dataShards,
@@ -487,39 +487,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
-  Uint8List crateApiKeysAppKeyExport({required AppKey that}) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerAppKey(
-            that,
-            serializer,
-          );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_list_prim_u_8_strict,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiKeysAppKeyExportConstMeta,
-        argValues: [that],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiKeysAppKeyExportConstMeta =>
-      const TaskConstMeta(debugName: "AppKey_export", argNames: ["that"]);
-
-  @override
   AppKey crateApiKeysAppKeyNew({required List<int> key}) {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_list_prim_u_8_loose(key, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
         },
         codec: SseCodec(
           decodeSuccessData:
@@ -546,7 +520,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -561,6 +535,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiKeysAppKeyPublicKeyConstMeta =>
       const TaskConstMeta(debugName: "AppKey_public_key", argNames: ["that"]);
+
+  @override
+  Uint8List crateApiKeysAppKeySave({required AppKey that}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerAppKey(
+            that,
+            serializer,
+          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_prim_u_8_strict,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiKeysAppKeySaveConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiKeysAppKeySaveConstMeta =>
+      const TaskConstMeta(debugName: "AppKey_save", argNames: ["that"]);
 
   @override
   Uint8List crateApiKeysAppKeySign({
@@ -2660,39 +2660,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Uint8List crateApiKeysSharingKeyExport({required SharingKey that}) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSharingKey(
-            that,
-            serializer,
-          );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 66)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_list_prim_u_8_strict,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiKeysSharingKeyExportConstMeta,
-        argValues: [that],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiKeysSharingKeyExportConstMeta =>
-      const TaskConstMeta(debugName: "SharingKey_export", argNames: ["that"]);
-
-  @override
   SharingKey crateApiKeysSharingKeyNew({required List<int> seed}) {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_list_prim_u_8_loose(seed, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 67)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 66)!;
         },
         codec: SseCodec(
           decodeSuccessData:
@@ -2719,7 +2693,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 68)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 67)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -2737,6 +2711,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         debugName: "SharingKey_public_key",
         argNames: ["that"],
       );
+
+  @override
+  Uint8List crateApiKeysSharingKeySave({required SharingKey that}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSharingKey(
+            that,
+            serializer,
+          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 68)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_prim_u_8_strict,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiKeysSharingKeySaveConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiKeysSharingKeySaveConstMeta =>
+      const TaskConstMeta(debugName: "SharingKey_save", argNames: ["that"]);
 
   @override
   UploadOptions crateApiOptionsUploadOptionsNew({
@@ -6214,13 +6214,13 @@ class AppKeyImpl extends RustOpaque implements AppKey {
         RustLib.instance.api.rust_arc_decrement_strong_count_AppKeyPtr,
   );
 
-  /// Exports the AppKey as a 32-byte buffer.
-  Uint8List export_() =>
-      RustLib.instance.api.crateApiKeysAppKeyExport(that: this);
-
   /// Returns the public key corresponding to the AppKey, hex-encoded.
   String publicKey() =>
       RustLib.instance.api.crateApiKeysAppKeyPublicKey(that: this);
+
+  /// Saves the AppKey as a 32-byte buffer. Pass it to [AppKey::new] to
+  /// restore the key.
+  Uint8List save() => RustLib.instance.api.crateApiKeysAppKeySave(that: this);
 
   /// Signs a message using the AppKey.
   Uint8List sign({required List<int> message}) =>
@@ -6687,13 +6687,14 @@ class SharingKeyImpl extends RustOpaque implements SharingKey {
         RustLib.instance.api.rust_arc_decrement_strong_count_SharingKeyPtr,
   );
 
-  /// Exports the SharingKey's seed as a 32-byte buffer.
-  Uint8List export_() =>
-      RustLib.instance.api.crateApiKeysSharingKeyExport(that: this);
-
   /// Returns the public key corresponding to the SharingKey, hex-encoded.
   String publicKey() =>
       RustLib.instance.api.crateApiKeysSharingKeyPublicKey(that: this);
+
+  /// Saves the SharingKey's seed as a 32-byte buffer. Pass it to
+  /// [SharingKey::new] to restore the key.
+  Uint8List save() =>
+      RustLib.instance.api.crateApiKeysSharingKeySave(that: this);
 }
 
 @sealed

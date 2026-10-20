@@ -19,15 +19,16 @@ void validateRecoveryPhrase({required String phrase}) =>
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<AppKey>>
 abstract class AppKey implements RustOpaqueInterface {
-  /// Exports the AppKey as a 32-byte buffer.
-  Uint8List export_();
-
   /// Imports an AppKey from a 32-byte buffer.
   factory AppKey({required List<int> key}) =>
       RustLib.instance.api.crateApiKeysAppKeyNew(key: key);
 
   /// Returns the public key corresponding to the AppKey, hex-encoded.
   String publicKey();
+
+  /// Saves the AppKey as a 32-byte buffer. Pass it to [AppKey::new] to
+  /// restore the key.
+  Uint8List save();
 
   /// Signs a message using the AppKey.
   Uint8List sign({required List<int> message});
@@ -41,15 +42,16 @@ abstract class AppKey implements RustOpaqueInterface {
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<SharingKey>>
 abstract class SharingKey implements RustOpaqueInterface {
-  /// Exports the SharingKey's seed as a 32-byte buffer.
-  Uint8List export_();
-
   /// Imports a SharingKey from a 32-byte seed.
   factory SharingKey({required List<int> seed}) =>
       RustLib.instance.api.crateApiKeysSharingKeyNew(seed: seed);
 
   /// Returns the public key corresponding to the SharingKey, hex-encoded.
   String publicKey();
+
+  /// Saves the SharingKey's seed as a 32-byte buffer. Pass it to
+  /// [SharingKey::new] to restore the key.
+  Uint8List save();
 }
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<SharingKeyRecord>>
