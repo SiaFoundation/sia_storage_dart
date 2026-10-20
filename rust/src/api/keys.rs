@@ -37,9 +37,10 @@ impl AppKey {
         })
     }
 
-    /// Exports the AppKey as a 32-byte buffer.
+    /// Saves the AppKey as a 32-byte buffer. Pass it to [AppKey::new] to
+    /// restore the key.
     #[frb(sync)]
-    pub fn export(&self) -> Vec<u8> {
+    pub fn save(&self) -> Vec<u8> {
         self.inner.export().to_vec()
     }
 
@@ -67,7 +68,7 @@ impl AppKey {
 /// A SharingKey grants read-only access to the objects attached to it.
 ///
 /// Owners create one with [Sdk::create_sharing_key](super::sdk::Sdk::create_sharing_key)
-/// and hand out its exported seed; recipients connect with
+/// and hand out its saved seed; recipients connect with
 /// [SharedSdk::connect](super::shared::SharedSdk::connect).
 #[frb(opaque)]
 pub struct SharingKey {
@@ -92,9 +93,10 @@ impl SharingKey {
         })
     }
 
-    /// Exports the SharingKey's seed as a 32-byte buffer.
+    /// Saves the SharingKey's seed as a 32-byte buffer. Pass it to
+    /// [SharingKey::new] to restore the key.
     #[frb(sync)]
-    pub fn export(&self) -> Vec<u8> {
+    pub fn save(&self) -> Vec<u8> {
         self.inner.export().to_vec()
     }
 

@@ -1,5 +1,5 @@
 ---
-default: major
+default: minor
 ---
 
 # Take a cutoff on `pruneSlabs`
