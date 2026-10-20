@@ -22,7 +22,7 @@ cd "$(dirname "$0")/.."
 # Codegen must match the flutter_rust_bridge runtime pinned in pubspec.yaml
 # and rust/Cargo.toml — a skewed codegen writes bindings with a different
 # content hash and frb refuses to initialize at runtime.
-FRB_VERSION=2.12.0
+FRB_VERSION=2.13.0
 
 if [[ "$(flutter_rust_bridge_codegen --version 2>/dev/null || true)" != "flutter_rust_bridge_codegen $FRB_VERSION" ]]; then
   cargo install flutter_rust_bridge_codegen --version "$FRB_VERSION" --locked --force
