@@ -39,16 +39,9 @@ pub struct PinnedSector {
     pub host_key: String,
 }
 
-/// A pinned slab from the indexer.
-pub struct PinnedSlab {
-    pub id: String,
-    pub encryption_key: Vec<u8>,
-    pub min_shards: u8,
-    pub sectors: Vec<PinnedSector>,
-}
-
 /// A slab representing a contiguous erasure-coded segment of a file.
 pub struct Slab {
+    pub version: u8,
     pub encryption_key: Vec<u8>,
     pub min_shards: u8,
     pub sectors: Vec<PinnedSector>,
@@ -94,6 +87,26 @@ pub struct Account {
     pub ready: bool,
     pub app: App,
     pub last_used: DateTime<Utc>,
+}
+
+/// An object's id, size, decrypted metadata, and timestamps, without its slabs.
+pub struct ObjectSummary {
+    pub id: String,
+    pub size: u64,
+    pub metadata: Vec<u8>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+/// Usage and lifetime information for a sharing key.
+pub struct KeyStats {
+    pub object_count: u64,
+    pub object_size: u64,
+    pub pinned_data: u64,
+    pub pinned_size: u64,
+    pub expires_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 /// Progress information about a successfully uploaded or downloaded shard.

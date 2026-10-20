@@ -4,6 +4,10 @@ updates:
     directory: /rust
     schedule:
       interval: weekly
+    groups:
+      cargo:
+        patterns:
+          - "*"
     ignore:
       # flutter_rust_bridge must move in lockstep with the Dart dependency
       # and the codegen pin in tool/build_web.sh (a skew breaks the frb
@@ -14,6 +18,10 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      pub:
+        patterns:
+          - "*"
     ignore:
       # See the cargo note above.
       - dependency-name: flutter_rust_bridge

@@ -24,14 +24,16 @@ import 'src/rust/api/object.dart';
 import 'src/rust/api/options.dart' as raw_options;
 import 'src/rust/api/sdk.dart';
 import 'src/rust/api/sdk.dart' as raw_sdk;
+import 'src/rust/api/shared.dart';
 import 'src/rust/api/types.dart';
 import 'src/rust/api/upload.dart';
 import 'src/rust/frb_generated.dart' show RustLib;
 
 export 'src/rust/api/builder.dart' show Builder;
-export 'src/rust/api/keys.dart' show AppKey;
+export 'src/rust/api/keys.dart' show AppKey, SharingKey, SharingKeyRecord;
 export 'src/rust/api/object.dart' show ObjectEvent, PinnedObject, encodedSize;
 export 'src/rust/api/sdk.dart' show Sdk;
+export 'src/rust/api/shared.dart' show SharedSdk;
 export 'src/rust/api/upload.dart' show PackedUpload;
 export 'src/rust/api/types.dart'
     show
@@ -40,10 +42,11 @@ export 'src/rust/api/types.dart'
         App,
         AppMetadata,
         Host,
+        KeyStats,
         NetAddress,
+        ObjectSummary,
         ObjectsCursor,
         PinnedSector,
-        PinnedSlab,
         SealedObject,
         ShardProgress,
         Slab;
@@ -82,6 +85,22 @@ abstract final class Sia {
     return AppKey(key: key);
   }
 
+  /// Imports a [SharingKey] from its 32-byte seed.
+  static Future<SharingKey> sharingKey(List<int> seed) async {
+    await ready();
+    return SharingKey(seed: seed);
+  }
+
+  /// Connects to an indexer with a sharing key's 32-byte seed for read-only
+  /// access to the objects attached to it.
+  static Future<SharedSdk> sharedSdk({
+    required String indexerUrl,
+    required List<int> sharingKey,
+  }) async {
+    await ready();
+    return SharedSdk.connect(indexerUrl: indexerUrl, seed: sharingKey);
+  }
+
   /// Generates a new BIP-39 12-word recovery phrase.
   static Future<String> generateRecoveryPhrase() async {
     await ready();
@@ -107,10 +126,16 @@ class UploadOptions {
   /// memory when null.
   final int? maxBufferedSlabs;
 
+  /// When set, the uploaded data overwrites the object starting at this byte
+  /// offset instead of being appended. Only the slabs covering the
+  /// overwritten range are rewritten. Ignored by packed uploads.
+  final BigInt? startOffset;
+
   const UploadOptions({
     this.dataShards,
     this.parityShards,
     this.maxBufferedSlabs,
+    this.startOffset,
   });
 }
 
@@ -185,6 +210,7 @@ extension SdkStreams on Sdk {
       dataShards: options.dataShards,
       parityShards: options.parityShards,
       maxBufferedSlabs: options.maxBufferedSlabs,
+      startOffset: options.startOffset,
     );
     final progress = raw.shardProgress();
     final iterator = StreamIterator<List<int>>(source);
@@ -196,6 +222,29 @@ extension SdkStreams on Sdk {
         final chunk = iterator.current;
         return chunk is Uint8List ? chunk : Uint8List.fromList(chunk);
       },
+      options: raw,
+    );
+    return Upload._(result, progress);
+  }
+
+  /// Uploads the file at `path`. The file is read natively rather than
+  /// streamed through Dart. Unsupported on web.
+  Upload uploadPath({
+    required PinnedObject object,
+    required String path,
+    UploadOptions options = const UploadOptions(),
+  }) {
+    final raw = raw_options.UploadOptions(
+      dataShards: options.dataShards,
+      parityShards: options.parityShards,
+      maxBufferedSlabs: options.maxBufferedSlabs,
+      startOffset: options.startOffset,
+    );
+    final progress = raw.shardProgress();
+    final result = raw_sdk.uploadPath(
+      sdk: this,
+      object: object,
+      path: path,
       options: raw,
     );
     return Upload._(result, progress);
@@ -227,10 +276,29 @@ extension SdkStreams on Sdk {
       dataShards: options.dataShards,
       parityShards: options.parityShards,
       maxBufferedSlabs: options.maxBufferedSlabs,
+      startOffset: null,
     );
     final progress = raw.shardProgress();
     final upload = raw_sdk.uploadPacked(sdk: this, options: raw);
     return PackedUploadSession._(upload, progress);
+  }
+}
+
+/// Stream-friendly download helper.
+extension SharedSdkStreams on SharedSdk {
+  /// Downloads a shared object's bytes.
+  Download download({
+    required PinnedObject object,
+    DownloadOptions options = const DownloadOptions(),
+  }) {
+    final raw = raw_options.DownloadOptions(
+      maxBufferedChunks: options.maxBufferedChunks,
+      offset: options.offset,
+      length: options.length,
+    );
+    final progress = raw.shardProgress();
+    final data = sharedDownload(sdk: this, object: object, options: raw);
+    return Download._(data, progress);
   }
 }
 
@@ -249,4 +317,9 @@ extension PackedUploadStreams on PackedUpload {
       },
     );
   }
+
+  /// Adds the file at `path`. The file is read natively rather than streamed
+  /// through Dart. Returns the number of bytes consumed. Unsupported on web.
+  Future<BigInt> addPath(String path) =>
+      packedUploadAddPath(upload: this, path: path);
 }

@@ -4,5 +4,6 @@ pub mod keys;
 pub mod object;
 pub mod options;
 pub mod sdk;
+pub mod shared;
 pub mod types;
 pub mod upload;

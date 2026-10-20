@@ -27,6 +27,8 @@ enum BuilderState {
 ///    [Builder::response_url] to display the approval URL, then
 ///    [Builder::wait_for_approval], then [Builder::register] with the user's
 ///    BIP-39 mnemonic.
+/// 3. **Pre-authorized**: call [Builder::connect_pre_authorized] with a key
+///    provisioned by the indexer operator and the user's BIP-39 mnemonic.
 ///
 /// Each successful state transition consumes the builder; subsequent calls
 /// from a wrong state error out.
@@ -115,6 +117,37 @@ impl Builder {
         .await
     }
 
+    /// Connects, approves, and registers the application in one call using a
+    /// 32-byte pre-authorized key seed provisioned by the indexer operator.
+    /// Returns the live SDK.
+    pub async fn connect_pre_authorized(
+        &self,
+        pre_authorized_key: Vec<u8>,
+        mnemonic: String,
+    ) -> Result<Sdk> {
+        run_local(async {
+            let seed: [u8; 32] = pre_authorized_key
+                .as_slice()
+                .try_into()
+                .map_err(|_| anyhow!("pre-authorized keys must be 32 bytes"))?;
+            let key = sia_core::signing::PrivateKey::from_seed(&seed);
+            self.with_state_transition(|state| async move {
+                match state {
+                    BuilderState::Disconnected(builder) => {
+                        let sdk = builder
+                            .connect_pre_authorized(&key, &mnemonic)
+                            .await
+                            .map_err(|e| anyhow!("{e}"))?;
+                        Ok((BuilderState::Finalized, Sdk { inner: sdk }))
+                    }
+                    _ => Err(anyhow!("builder is in an invalid state")),
+                }
+            })
+            .await
+        })
+        .await
+    }
+
     /// Requests connection approval for the application. Transitions the
     /// builder into the requesting-approval state.
     pub async fn request_connection(&self) -> Result<()> {
@@ -164,8 +197,42 @@ impl Builder {
         .await
     }
 
+    /// Returns whether the connect key the user approved with already has an
+    /// account for this application. Only valid after
+    /// [Builder::wait_for_approval].
+    #[frb(sync)]
+    pub fn reconnecting(&self) -> Result<bool> {
+        let state = self
+            .state
+            .lock()
+            .map_err(|_| anyhow!("builder mutex poisoned"))?;
+        match state.as_ref() {
+            Some(BuilderState::Approved(b)) => Ok(b.reconnecting()),
+            _ => Err(anyhow!("builder is in an invalid state")),
+        }
+    }
+
+    /// Returns whether `mnemonic` derives an application key that is already
+    /// registered with the indexer. Neither registers the key nor consumes
+    /// the builder. Only valid after [Builder::wait_for_approval].
+    pub async fn matches_existing_app_key(&self, mnemonic: String) -> Result<bool> {
+        run_local(self.with_state_transition(|state| async move {
+            match state {
+                BuilderState::Approved(builder) => {
+                    let matches = builder.matches_existing_app_key(&mnemonic).await;
+                    Ok((BuilderState::Approved(builder), matches))
+                }
+                _ => Err(anyhow!("builder is in an invalid state")),
+            }
+        }))
+        .await?
+        .map_err(|e| anyhow!("{e}"))
+    }
+
     /// Registers the application with the indexer using the provided
-    /// recovery phrase. Returns the live SDK.
+    /// recovery phrase. Returns the live SDK. A recovery phrase that differs
+    /// from the existing account's registers a new application key; use
+    /// [Builder::matches_existing_app_key] to check first.
     pub async fn register(&self, mnemonic: String) -> Result<Sdk> {
         run_local(self.with_state_transition(|state| async move {
             match state {

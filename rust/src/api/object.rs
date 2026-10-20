@@ -114,21 +114,34 @@ impl PinnedObject {
     /// Returns the time the object was created.
     #[frb(sync)]
     pub fn created_at(&self) -> DateTime<Utc> {
-        *self
-            .inner
+        self.inner
             .lock()
             .expect("object mutex poisoned")
-            .created_at()
+            .created_at
     }
 
     /// Returns the time the object was last updated.
     #[frb(sync)]
     pub fn updated_at(&self) -> DateTime<Utc> {
-        *self
-            .inner
+        self.inner
             .lock()
             .expect("object mutex poisoned")
-            .updated_at()
+            .updated_at
+    }
+
+    /// Returns a new object truncated to `length` bytes. If `length` is
+    /// greater than the object's size, the returned object is unchanged. The
+    /// object must be re-pinned afterwards.
+    #[frb(sync)]
+    pub fn truncate(&self, length: u64) -> PinnedObject {
+        PinnedObject {
+            inner: Mutex::new(
+                self.inner
+                    .lock()
+                    .expect("object mutex poisoned")
+                    .truncate(length),
+            ),
+        }
     }
 
     /// Snapshot the inner object for use with sia_storage methods.
@@ -195,6 +208,7 @@ pub fn encoded_size(size: u64, data_shards: u8, parity_shards: u8) -> u64 {
 
 pub(crate) fn slab_from_native(s: sia_storage::Slab) -> Slab {
     Slab {
+        version: s.version.into(),
         encryption_key: s.encryption_key.as_ref().to_vec(),
         min_shards: s.min_shards,
         sectors: s
@@ -212,6 +226,7 @@ pub(crate) fn slab_from_native(s: sia_storage::Slab) -> Slab {
 
 pub(crate) fn slab_to_native(s: Slab) -> Result<sia_storage::Slab> {
     Ok(sia_storage::Slab {
+        version: sia_storage::SlabVersion::try_from(s.version).map_err(|e| anyhow!("{e}"))?,
         encryption_key: sia_storage::EncryptionKey::try_from(s.encryption_key.as_slice())
             .map_err(|e| anyhow!("{e}"))?,
         min_shards: s.min_shards,
