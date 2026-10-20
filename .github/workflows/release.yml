@@ -28,7 +28,7 @@ jobs:
       contents: write        # push the `release` branch
       pull-requests: write   # open / update the release PR
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0   # knope walks commit history since last tag
 
@@ -57,7 +57,7 @@ jobs:
     steps:
       # Checkout with the PAT so the tag push knope performs uses PAT auth.
       # GITHUB_TOKEN-driven tag pushes don't trigger publish.yml.
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           ref: main

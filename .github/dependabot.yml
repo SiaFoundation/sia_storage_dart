@@ -25,3 +25,12 @@ updates:
     ignore:
       # See the cargo note above.
       - dependency-name: flutter_rust_bridge
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - "*"
