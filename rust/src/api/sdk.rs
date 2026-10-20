@@ -8,10 +8,10 @@ use sia_core::types::Hash256;
 use tokio::io::AsyncReadExt;
 
 use super::io::{dart_chunk_reader, run_local};
-use super::keys::AppKey;
-use super::object::{ObjectEvent, PinnedObject, slab_from_native};
+use super::keys::{AppKey, SharingKey, SharingKeyRecord};
+use super::object::{ObjectEvent, PinnedObject};
 use super::options::{DownloadOptions, UploadOptions};
-use super::types::{Account, AddressProtocol, App, Host, NetAddress, ObjectsCursor, PinnedSector, PinnedSlab};
+use super::types::{Account, AddressProtocol, App, Host, NetAddress, ObjectsCursor};
 use super::upload::PackedUpload;
 
 use crate::frb_generated::StreamSink;
@@ -118,20 +118,16 @@ impl Sdk {
         .await
     }
 
-    /// Returns metadata about a slab.
-    pub async fn slab(&self, slab_id: String) -> Result<PinnedSlab> {
+    /// Unpins slabs not used by any object on the account. Only slabs pinned
+    /// before `before` are pruned; `None` leaves the cutoff to the indexer,
+    /// which spares recently pinned slabs so an in-progress upload is not
+    /// pruned out from under itself.
+    pub async fn prune_slabs(&self, before: Option<DateTime<Utc>>) -> Result<()> {
         run_local(async {
-            let id = Hash256::from_str(&slab_id).map_err(|e| anyhow!("{e}"))?;
-            let slab = self.inner.slab(&id).await.map_err(|e| anyhow!("{e}"))?;
-            Ok(pinned_slab_from_native(slab))
-        })
-        .await
-    }
-
-    /// Unpins slabs not used by any object on the account.
-    pub async fn prune_slabs(&self) -> Result<()> {
-        run_local(async {
-            self.inner.prune_slabs().await.map_err(|e| anyhow!("{e}"))
+            self.inner
+                .prune_slabs(before)
+                .await
+                .map_err(|e| anyhow!("{e}"))
         })
         .await
     }
@@ -159,7 +155,7 @@ impl Sdk {
 
     /// Creates a signed URL for sharing an object until `valid_until`.
     #[frb(sync)]
-    pub fn share_object(
+    pub fn object_share_url(
         &self,
         object: &PinnedObject,
         valid_until: DateTime<Utc>,
@@ -167,22 +163,140 @@ impl Sdk {
         let snapshot = object.snapshot();
         let url = self
             .inner
-            .share_object(&snapshot, valid_until)
+            .object_share_url(&snapshot, valid_until)
             .map_err(|e| anyhow!("{e}"))?;
         Ok(url.to_string())
     }
 
     /// Retrieves a shared object from a signed URL.
-    pub async fn shared_object(&self, shared_url: String) -> Result<PinnedObject> {
+    pub async fn object_from_share_url(&self, share_url: String) -> Result<PinnedObject> {
         run_local(async {
             let obj = self
                 .inner
-                .shared_object(shared_url)
+                .object_from_share_url(share_url)
                 .await
                 .map_err(|e| anyhow!("{e}"))?;
             Ok(PinnedObject {
                 inner: Mutex::new(obj),
             })
+        })
+        .await
+    }
+
+    /// Creates a sharing key granting read-only access to the objects
+    /// attached to it with [Sdk::share_object]. `expires_at` of `None`
+    /// creates a key that never expires.
+    pub async fn create_sharing_key(
+        &self,
+        description: String,
+        expires_at: Option<DateTime<Utc>>,
+    ) -> Result<SharingKey> {
+        run_local(async {
+            let key = self
+                .inner
+                .create_sharing_key(sia_storage::SharingKeyOptions {
+                    description,
+                    expires_at,
+                })
+                .await
+                .map_err(|e| anyhow!("{e}"))?;
+            Ok(SharingKey { inner: key })
+        })
+        .await
+    }
+
+    /// Lists the account's sharing keys. Omit `offset` or `limit` to use the
+    /// indexer's default paging.
+    pub async fn sharing_keys(
+        &self,
+        offset: Option<u64>,
+        limit: Option<u64>,
+    ) -> Result<Vec<SharingKeyRecord>> {
+        run_local(async {
+            let records = self
+                .inner
+                .sharing_keys(offset, limit)
+                .await
+                .map_err(|e| anyhow!("{e}"))?;
+            Ok(records
+                .into_iter()
+                .map(|r| SharingKeyRecord { inner: r })
+                .collect())
+        })
+        .await
+    }
+
+    /// Fetches the indexer's current record for `key`.
+    pub async fn sharing_key(&self, key: &SharingKey) -> Result<SharingKeyRecord> {
+        run_local(async {
+            let record = self
+                .inner
+                .sharing_key(&key.inner)
+                .await
+                .map_err(|e| anyhow!("{e}"))?;
+            Ok(SharingKeyRecord { inner: record })
+        })
+        .await
+    }
+
+    /// Attaches an object the account owns to `key` so recipients of the key
+    /// can read it. Attaching an already attached object replaces it, so a
+    /// failed call can be retried.
+    pub async fn share_object(&self, key: &SharingKey, object: &PinnedObject) -> Result<()> {
+        run_local(async {
+            let snapshot = object.snapshot();
+            self.inner
+                .share_object(&key.inner, &snapshot)
+                .await
+                .map_err(|e| anyhow!("{e}"))
+        })
+        .await
+    }
+
+    /// Lists the objects attached to `key`. Omit `offset` or `limit` to use
+    /// the indexer's default paging.
+    pub async fn shared_objects(
+        &self,
+        key: &SharingKey,
+        offset: Option<u64>,
+        limit: Option<u64>,
+    ) -> Result<Vec<PinnedObject>> {
+        run_local(async {
+            let objects = self
+                .inner
+                .shared_objects(&key.inner, offset, limit)
+                .await
+                .map_err(|e| anyhow!("{e}"))?;
+            Ok(objects
+                .into_iter()
+                .map(|o| PinnedObject {
+                    inner: Mutex::new(o),
+                })
+                .collect())
+        })
+        .await
+    }
+
+    /// Detaches the object with ID `object_id` from `key`.
+    pub async fn unshare_object(&self, key: &SharingKey, object_id: String) -> Result<()> {
+        run_local(async {
+            let id = Hash256::from_str(&object_id).map_err(|e| anyhow!("{e}"))?;
+            self.inner
+                .unshare_object(&key.inner, &id)
+                .await
+                .map_err(|e| anyhow!("{e}"))
+        })
+        .await
+    }
+
+    /// Deletes `key` along with all of its object attachments. Downloads
+    /// already in flight may keep reading for up to five minutes.
+    pub async fn revoke_sharing_key(&self, key: &SharingKey) -> Result<()> {
+        run_local(async {
+            self.inner
+                .revoke_sharing_key(&key.inner)
+                .await
+                .map_err(|e| anyhow!("{e}"))
         })
         .await
     }
@@ -196,6 +310,10 @@ impl Sdk {
 /// previous upload, pass the object returned from the prior call. Note that
 /// appending changes the object's ID; the object must be re-pinned afterwards
 /// and any cached references updated.
+///
+/// A free function rather than a method so the generated Dart class doesn't
+/// gain a member that would shadow the `SdkStreams.upload` extension method in
+/// `lib/sia_storage.dart`.
 pub async fn upload(
     sdk: &Sdk,
     object: &PinnedObject,
@@ -219,15 +337,53 @@ pub async fn upload(
     .await
 }
 
+/// Uploads the file at `path` to the Sia network. Behaves like [upload]
+/// otherwise, but reads the file natively instead of streaming chunks across
+/// the language boundary. Unsupported on web.
+///
+/// A free function rather than a method so the generated Dart class doesn't
+/// gain a member that would shadow the `SdkStreams.uploadPath` extension method in
+/// `lib/sia_storage.dart`.
+pub async fn upload_path(
+    sdk: &Sdk,
+    object: &PinnedObject,
+    path: String,
+    options: &UploadOptions,
+) -> Result<PinnedObject> {
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = (sdk, object, path, options);
+        Err(anyhow!("path uploads are not supported on web"))
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    run_local(async {
+        let opts = options.build();
+        let snapshot = object.snapshot();
+        let obj = sdk
+            .inner
+            .upload_path(snapshot, path, opts)
+            .await
+            .map_err(|e| anyhow!("{e}"))?;
+        Ok(PinnedObject {
+            inner: Mutex::new(obj),
+        })
+    })
+    .await
+}
+
 /// Begins a packed upload, batching multiple small objects into shared slabs
 /// to avoid the per-object padding of [upload]. Add objects with
 /// [packed_upload_add](super::upload::packed_upload_add) and complete the
 /// upload with [PackedUpload::finalize](super::upload::PackedUpload::finalize).
+///
+/// A free function rather than a method so the generated Dart class doesn't
+/// gain a member that would shadow the `SdkStreams.uploadPacked` extension method in
+/// `lib/sia_storage.dart`.
 #[frb(sync)]
 pub fn upload_packed(sdk: &Sdk, options: &UploadOptions) -> Result<PackedUpload> {
     let upload = sdk
         .inner
-        .upload_packed(options.build())
+        .upload_packed(options.build_packed())
         .map_err(|e| anyhow!("{e}"))?;
     Ok(PackedUpload {
         inner: Mutex::new(Some(upload)),
@@ -235,6 +391,10 @@ pub fn upload_packed(sdk: &Sdk, options: &UploadOptions) -> Result<PackedUpload>
 }
 
 /// Downloads an object from the Sia network as a stream of byte chunks.
+///
+/// A free function rather than a method so the generated Dart class doesn't
+/// gain a member that would shadow the `SdkStreams.download` extension method in
+/// `lib/sia_storage.dart`.
 pub async fn download(
     sdk: &Sdk,
     object: &PinnedObject,
@@ -244,26 +404,33 @@ pub async fn download(
     run_local(async {
         let opts = options.build();
         let snapshot = object.snapshot();
-        let mut reader = sdk
+        let reader = sdk
             .inner
             .download(&snapshot, opts)
             .map_err(|e| anyhow!("{e}"))?;
-        let mut buf = vec![0u8; 64 * 1024];
-        loop {
-            let n = reader.read(&mut buf).await.map_err(|e| anyhow!("{e}"))?;
-            if n == 0 {
-                break;
-            }
-            sink.add(buf[..n].to_vec()).map_err(|e| anyhow!("{e}"))?;
-        }
-        Ok(())
+        stream_download(reader, sink).await
     })
     .await
 }
 
 // ---- internal conversions ----
 
-fn host_from_native(h: sia_storage::Host) -> Host {
+pub(crate) async fn stream_download(
+    mut reader: sia_storage::Download,
+    sink: StreamSink<Vec<u8>>,
+) -> Result<()> {
+    let mut buf = vec![0u8; 64 * 1024];
+    loop {
+        let n = reader.read(&mut buf).await.map_err(|e| anyhow!("{e}"))?;
+        if n == 0 {
+            break;
+        }
+        sink.add(buf[..n].to_vec()).map_err(|e| anyhow!("{e}"))?;
+    }
+    Ok(())
+}
+
+pub(crate) fn host_from_native(h: sia_storage::Host) -> Host {
     Host {
         public_key: h.public_key.to_string(),
         addresses: h
@@ -302,24 +469,3 @@ fn account_from_native(a: sia_storage::Account) -> Account {
         last_used: a.last_used,
     }
 }
-
-fn pinned_slab_from_native(s: sia_storage::PinnedSlab) -> PinnedSlab {
-    PinnedSlab {
-        id: s.id.to_string(),
-        encryption_key: s.encryption_key.as_ref().to_vec(),
-        min_shards: s.min_shards,
-        sectors: s
-            .sectors
-            .into_iter()
-            .map(|sec| PinnedSector {
-                root: sec.root.to_string(),
-                host_key: sec.host_key.to_string(),
-            })
-            .collect(),
-    }
-}
-
-// suppress unused-import warning when slab_from_native isn't used by sdk.rs
-const _: fn() = || {
-    let _ = slab_from_native;
-};

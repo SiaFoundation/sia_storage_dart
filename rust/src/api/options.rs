@@ -18,6 +18,7 @@ pub struct UploadOptions {
     data_shards: Option<u8>,
     parity_shards: Option<u8>,
     max_buffered_slabs: Option<u32>,
+    start_offset: Option<u64>,
     progress_sink: Mutex<Option<StreamSink<ShardProgress>>>,
 }
 
@@ -29,16 +30,22 @@ unsafe impl Sync for UploadOptions {}
 impl UploadOptions {
     /// Constructs an [UploadOptions] handle. All primitive arguments are
     /// optional; `None` keeps the SDK default.
+    ///
+    /// When `start_offset` is set, the uploaded data overwrites the object
+    /// starting at that byte offset instead of being appended. It is ignored
+    /// by packed uploads.
     #[frb(sync)]
     pub fn new(
         data_shards: Option<u8>,
         parity_shards: Option<u8>,
         max_buffered_slabs: Option<u32>,
+        start_offset: Option<u64>,
     ) -> Self {
         Self {
             data_shards,
             parity_shards,
             max_buffered_slabs,
+            start_offset,
             progress_sink: Mutex::new(None),
         }
     }
@@ -54,7 +61,13 @@ impl UploadOptions {
     }
 
     pub(crate) fn build(&self) -> sia_storage::UploadOptions {
-        let mut opts = sia_storage::UploadOptions::default();
+        let mut opts: sia_storage::UploadOptions = self.build_packed().into();
+        opts.start_offset = self.start_offset;
+        opts
+    }
+
+    pub(crate) fn build_packed(&self) -> sia_storage::PackedUploadOptions {
+        let mut opts = sia_storage::PackedUploadOptions::default();
         if let Some(v) = self.data_shards {
             opts.data_shards = v;
         }

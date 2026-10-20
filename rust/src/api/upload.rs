@@ -89,6 +89,10 @@ impl PackedUpload {
 /// If the reader errors part-way, no object is registered for the failed call
 /// and the upload may still be continued or finalized. Objects are returned in
 /// add order from [PackedUpload::finalize].
+///
+/// A free function rather than a method so the generated Dart class doesn't
+/// gain a member that would shadow the `PackedUploadStreams.add` extension method in
+/// `lib/sia_storage.dart`.
 pub async fn packed_upload_add(
     upload: &PackedUpload,
     source: impl Fn() -> DartFnFuture<Option<Vec<u8>>> + Send + Sync + 'static,
@@ -102,6 +106,31 @@ pub async fn packed_upload_add(
             .ok_or_else(|| anyhow!("packed upload already finalized"))?;
         let reader = dart_chunk_reader(source);
         let res = packed.add(reader).await;
+        *upload.inner.lock().expect("packed upload mutex poisoned") = Some(packed);
+        res.map_err(|e| anyhow!("{e}"))
+    })
+    .await
+}
+
+/// Adds the file at `path` to the upload. Behaves like [packed_upload_add]
+/// otherwise, but reads the file natively instead of streaming chunks across
+/// the language boundary. Returns the number of bytes consumed. Unsupported on
+/// web.
+pub async fn packed_upload_add_path(upload: &PackedUpload, path: String) -> Result<u64> {
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = (upload, path);
+        Err(anyhow!("path uploads are not supported on web"))
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    run_local(async {
+        let mut packed = upload
+            .inner
+            .lock()
+            .expect("packed upload mutex poisoned")
+            .take()
+            .ok_or_else(|| anyhow!("packed upload already finalized"))?;
+        let res = packed.add_path(path).await;
         *upload.inner.lock().expect("packed upload mutex poisoned") = Some(packed);
         res.map_err(|e| anyhow!("{e}"))
     })
