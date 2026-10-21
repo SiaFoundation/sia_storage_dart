@@ -328,6 +328,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AppMetadata dco_decode_box_autoadd_app_metadata(dynamic raw);
 
   @protected
+  ObjectSummary dco_decode_box_autoadd_object_summary(dynamic raw);
+
+  @protected
   ObjectsCursor dco_decode_box_autoadd_objects_cursor(dynamic raw);
 
   @protected
@@ -385,6 +388,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<NetAddress> dco_decode_list_net_address(dynamic raw);
 
   @protected
+  List<ObjectEventSummary> dco_decode_list_object_event_summary(dynamic raw);
+
+  @protected
   List<ObjectSummary> dco_decode_list_object_summary(dynamic raw);
 
   @protected
@@ -401,6 +407,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   NetAddress dco_decode_net_address(dynamic raw);
+
+  @protected
+  ObjectEventSummary dco_decode_object_event_summary(dynamic raw);
 
   @protected
   ObjectSummary dco_decode_object_summary(dynamic raw);
@@ -425,6 +434,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   DateTime? dco_decode_opt_box_autoadd_Chrono_Utc(dynamic raw);
+
+  @protected
+  ObjectSummary? dco_decode_opt_box_autoadd_object_summary(dynamic raw);
 
   @protected
   ObjectsCursor? dco_decode_opt_box_autoadd_objects_cursor(dynamic raw);
@@ -722,6 +734,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AppMetadata sse_decode_box_autoadd_app_metadata(SseDeserializer deserializer);
 
   @protected
+  ObjectSummary sse_decode_box_autoadd_object_summary(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ObjectsCursor sse_decode_box_autoadd_objects_cursor(
     SseDeserializer deserializer,
   );
@@ -783,6 +800,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<NetAddress> sse_decode_list_net_address(SseDeserializer deserializer);
 
   @protected
+  List<ObjectEventSummary> sse_decode_list_object_event_summary(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<ObjectSummary> sse_decode_list_object_summary(
     SseDeserializer deserializer,
   );
@@ -803,6 +825,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   NetAddress sse_decode_net_address(SseDeserializer deserializer);
+
+  @protected
+  ObjectEventSummary sse_decode_object_event_summary(
+    SseDeserializer deserializer,
+  );
 
   @protected
   ObjectSummary sse_decode_object_summary(SseDeserializer deserializer);
@@ -827,6 +854,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   DateTime? sse_decode_opt_box_autoadd_Chrono_Utc(SseDeserializer deserializer);
+
+  @protected
+  ObjectSummary? sse_decode_opt_box_autoadd_object_summary(
+    SseDeserializer deserializer,
+  );
 
   @protected
   ObjectsCursor? sse_decode_opt_box_autoadd_objects_cursor(
@@ -1182,6 +1214,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_object_summary(
+    ObjectSummary self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_objects_cursor(
     ObjectsCursor self,
     SseSerializer serializer,
@@ -1251,6 +1289,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_object_event_summary(
+    List<ObjectEventSummary> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_object_summary(
     List<ObjectSummary> self,
     SseSerializer serializer,
@@ -1278,6 +1322,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_net_address(NetAddress self, SseSerializer serializer);
 
   @protected
+  void sse_encode_object_event_summary(
+    ObjectEventSummary self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_object_summary(ObjectSummary self, SseSerializer serializer);
 
   @protected
@@ -1303,6 +1353,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_Chrono_Utc(
     DateTime? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_object_summary(
+    ObjectSummary? self,
     SseSerializer serializer,
   );
 

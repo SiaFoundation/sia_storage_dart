@@ -107,6 +107,15 @@ abstract class Sdk implements RustOpaqueInterface {
   /// Returns metadata about a specific object.
   Future<PinnedObject> object({required String key});
 
+  /// Returns object events from the indexer without the objects' slabs,
+  /// which makes the response a small fraction of the size of
+  /// [Sdk::object_events]. Fetch the full object with [Sdk::object] to
+  /// download it.
+  Future<List<ObjectEventSummary>> objectEventSummaries({
+    ObjectsCursor? cursor,
+    required int limit,
+  });
+
   /// Returns object events from the indexer for syncing.
   Future<List<ObjectEvent>> objectEvents({
     ObjectsCursor? cursor,

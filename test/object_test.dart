@@ -65,4 +65,30 @@ void main() {
       throwsA(anything),
     );
   });
+
+  test('ObjectEventSummary carries a summary or nothing when deleted', () {
+    final updatedAt = DateTime.utc(2026, 10, 21, 12);
+    final summary = ObjectSummary(
+      id: 'a' * 64,
+      size: BigInt.from(4096),
+      metadata: Uint8List.fromList([1, 2]),
+      createdAt: updatedAt,
+      updatedAt: updatedAt,
+    );
+    final event = ObjectEventSummary(
+      id: summary.id,
+      deleted: false,
+      updatedAt: updatedAt,
+      object: summary,
+    );
+    expect(event.object?.size, BigInt.from(4096));
+    expect(event.object?.metadata, equals([1, 2]));
+
+    final deleted = ObjectEventSummary(
+      id: summary.id,
+      deleted: true,
+      updatedAt: updatedAt,
+    );
+    expect(deleted.object, isNull);
+  });
 }

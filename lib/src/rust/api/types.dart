@@ -238,6 +238,36 @@ class NetAddress {
           address == other.address;
 }
 
+/// An object event listed without the object's slabs. Fetch the full object
+/// with `Sdk.object` to download it.
+class ObjectEventSummary {
+  final String id;
+  final bool deleted;
+  final DateTime updatedAt;
+  final ObjectSummary? object;
+
+  const ObjectEventSummary({
+    required this.id,
+    required this.deleted,
+    required this.updatedAt,
+    this.object,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^ deleted.hashCode ^ updatedAt.hashCode ^ object.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ObjectEventSummary &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          deleted == other.deleted &&
+          updatedAt == other.updatedAt &&
+          object == other.object;
+}
+
 /// An object's id, size, decrypted metadata, and timestamps, without its slabs.
 class ObjectSummary {
   final String id;
