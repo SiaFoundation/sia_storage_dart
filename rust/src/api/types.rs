@@ -98,6 +98,15 @@ pub struct ObjectSummary {
     pub updated_at: DateTime<Utc>,
 }
 
+/// An object event listed without the object's slabs. Fetch the full object
+/// with `Sdk.object` to download it.
+pub struct ObjectEventSummary {
+    pub id: String,
+    pub deleted: bool,
+    pub updated_at: DateTime<Utc>,
+    pub object: Option<ObjectSummary>,
+}
+
 /// Usage and lifetime information for a sharing key.
 pub struct KeyStats {
     pub object_count: u64,

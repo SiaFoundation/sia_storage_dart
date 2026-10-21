@@ -44,6 +44,7 @@ export 'src/rust/api/types.dart'
         Host,
         KeyStats,
         NetAddress,
+        ObjectEventSummary,
         ObjectSummary,
         ObjectsCursor,
         PinnedSector,

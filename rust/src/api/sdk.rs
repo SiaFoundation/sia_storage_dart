@@ -11,7 +11,10 @@ use super::io::{dart_chunk_reader, run_local};
 use super::keys::{AppKey, SharingKey, SharingKeyRecord};
 use super::object::{ObjectEvent, PinnedObject};
 use super::options::{DownloadOptions, UploadOptions};
-use super::types::{Account, AddressProtocol, App, Host, NetAddress, ObjectsCursor};
+use super::types::{
+    Account, AddressProtocol, App, Host, NetAddress, ObjectEventSummary, ObjectSummary,
+    ObjectsCursor,
+};
 use super::upload::PackedUpload;
 
 use crate::frb_generated::StreamSink;
@@ -76,6 +79,47 @@ impl Sdk {
                     deleted: e.deleted,
                     updated_at: e.updated_at,
                     object: e.object.map(Mutex::new),
+                })
+                .collect())
+        })
+        .await
+    }
+
+    /// Returns object events from the indexer without the objects' slabs,
+    /// which makes the response a small fraction of the size of
+    /// [Sdk::object_events]. Fetch the full object with [Sdk::object] to
+    /// download it.
+    pub async fn object_event_summaries(
+        &self,
+        cursor: Option<ObjectsCursor>,
+        limit: u32,
+    ) -> Result<Vec<ObjectEventSummary>> {
+        run_local(async {
+            let cursor = match cursor {
+                Some(c) => Some(sia_storage::ObjectsCursor {
+                    after: c.after,
+                    id: Hash256::from_str(&c.id).map_err(|e| anyhow!("{e}"))?,
+                }),
+                None => None,
+            };
+            let events = self
+                .inner
+                .object_event_summaries(cursor, Some(limit as usize))
+                .await
+                .map_err(|e| anyhow!("{e}"))?;
+            Ok(events
+                .into_iter()
+                .map(|e| ObjectEventSummary {
+                    id: e.id.to_string(),
+                    deleted: e.deleted,
+                    updated_at: e.updated_at,
+                    object: e.object.map(|o| ObjectSummary {
+                        id: o.id.to_string(),
+                        size: o.size,
+                        metadata: o.metadata,
+                        created_at: o.created_at,
+                        updated_at: o.updated_at,
+                    }),
                 })
                 .collect())
         })
