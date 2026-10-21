@@ -2320,9 +2320,9 @@ dependencies = [
 
 [[package]]
 name = "sia_mux"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "719bf94ff9479d740bcf1e053b206541f51a052844c10c7ce9485c284d98b1d3"
+checksum = "203bf193c35074a2503f76150cb8cfea262651d39c3d67964ec433337f1e1e13"
 dependencies = [
  "blake2b_simd",
  "bytes",
@@ -2592,9 +2592,9 @@ checksum = "fd3ca314f692efd6c868f8408f53fe444634a845f96c028b97d35f6a1f79f0ee"
 
 [[package]]
 name = "tokio"
-version = "1.54.0"
+version = "1.54.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0c168a474b95bfecfe908a65d4bdffc523144b649a74c09c286afb35d53e0bc"
+checksum = "b52fd3255258d26fac7264ab5a76b53c13367136dc011d3d6ad4f8ed070396a3"
 dependencies = [
  "bytes",
  "libc",
