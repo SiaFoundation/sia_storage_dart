@@ -9,7 +9,7 @@ crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 flutter_rust_bridge = { version = "=2.13.0", features = ["chrono"] }
-sia_storage = "0.13.2"
+sia_storage = "0.13.3"
 sia_core = "0.6.0"
 chrono = "0.4"
 anyhow = "1"
