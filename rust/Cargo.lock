@@ -2021,6 +2021,7 @@ checksum = "48e13bd8c0e9365c43cfa5c9e8f9ad49d3c8444926c9aac819e0e4dc503c8fdf"
 dependencies = [
  "aws-lc-rs",
  "once_cell",
+ "ring",
  "rustls-pki-types",
  "rustls-webpki",
  "subtle",
@@ -2347,9 +2348,9 @@ dependencies = [
 
 [[package]]
 name = "sia_storage"
-version = "0.13.3"
+version = "0.13.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "316625f59f121e530b5ed0cb0e1e8ff71966023023f123aa16c39ffa2ba88e46"
+checksum = "31ceb6b4a788a37260cfe4ab413f45a0c2b97d67d8a9c6d370073f7144dab562"
 dependencies = [
  "base64",
  "blake2b_simd",
