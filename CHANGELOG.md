@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.4.1 (2026-10-28)
+
+### Features
+
+- Host performance metrics and the price cache are now shared across all SDK instances.
+
+#### List object events without slabs
+
+Add `Sdk.objectEventSummaries`, which lists the same object events as `Sdk.objectEvents` without the objects' slabs, making the response much smaller. Each `ObjectEventSummary` has an `ObjectSummary` with the object's id, size, decrypted metadata and timestamps, or `null` when the object was deleted, and paginates with the same `ObjectsCursor`. Fetch the full object with `Sdk.object` to download it.
+
+```dart
+final events = await sdk.objectEventSummaries(cursor: null, limit: 100);
+```
+
+### Fixes
+
+- Stop sending a chunk's trailing frame in a packet of its own
+- Fixed an Android crash on the first HTTPS request in apps that load React Native.
+- Appending data now efficiently repacks the last slab when it is not full.
+
+#### Fix connecting to hosts that announce an IPv6 address
+
+An announced address is `host:port` with an IPv6 host bracketed. The siamux client split it on the last colon, which left the brackets attached to the host, and `getaddrinfo` rejects those, so every IPv6 host failed to resolve and no shard could reach it. The address is now resolved whole.
+
+#### Fix a crash reading a slab with a host the SDK does not know
+
+A slab whose sectors include a host missing from the SDK's host list, such as one an indexer stopped listing, crashed the download with "index out of bounds: the len is 29 but the index is 29". Sectors on unknown hosts are dropped before reading, and the array the recovered shards are stored in was sized from the sectors left rather than from the slab's shard count, while each shard is stored at its index in the slab. A read from the host at the slab's last index then wrote past the end. On web the panic stops the WebAssembly module, so every stream in the page froze with no error. The array is now sized from the slab's shard count.
+
+#### Take a read's account token once the stream to the host is open
+
+A sector read took its account token before reaching the host. When reaching the host took a long time, as in a browser delaying WebTransport connections after failed handshakes, the token expired on the way and the host rejected the read with "account token expired". The transports now take the token from the token source after the stream to the host is open.
+
+#### Upgrade reqwest and update TLS security dependencies
+
+Upgrade reqwest to 0.13.5, using platform certificate verification on native platforms except Android. Android uses a preconfigured Rustls client with bundled roots to avoid requiring JNI initialization. Web builds continue using browser TLS.
+
+Update `webpki-roots` to 1.0.10 and `rustls-webpki` to 0.103.16 in the lockfile to address RUSTSEC-2026-0381 and RUSTSEC-2026-0382.
+
+#### Close WebTransport streams whose open was abandoned
+
+When opening a bidirectional stream timed out or the read waiting on it was cancelled, a stream the browser opened afterwards was never used or closed. These streams piled up on the host's session until it stopped accepting new ones, and reads from that host stalled. A stream that opens after its caller gave up is now closed right away.
+
+#### Stop redialing hosts that refused a WebTransport handshake
+
+Chrome counts every failed WebTransport handshake against the whole browser for five minutes, and while any are counted it delays each new connection by 10 ms doubled per failure, up to a minute. The web client dialed a host again on the next read after its handshake failed, so a few unreachable hosts kept adding failures, and within minutes dials to healthy hosts took 35 to 60 seconds. An address that refuses a handshake is now not dialed again for five minutes, and a host whose addresses have all refused fails at once, so the download moves to other hosts. A dial that only times out is not counted, since Chrome can hold a healthy host back for up to a minute while it is counting failures.
+
 ## 0.4.0 (2026-10-20)
 
 ### Breaking Changes
