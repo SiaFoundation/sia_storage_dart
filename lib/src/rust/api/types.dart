@@ -342,6 +342,46 @@ class PinnedSector {
           hostKey == other.hostKey;
 }
 
+/// An unsigned request to create a pre-authorized key in indexd.
+class PreAuthorizedKeyRequest {
+  /// The connect key used to authorize connections.
+  final String connectKey;
+
+  /// When the authorization expires.
+  final DateTime expiration;
+
+  /// The maximum number of authorized connections.
+  final int totalUses;
+
+  /// The permitted application as a hex-encoded 32-byte ID, or any
+  /// application when null.
+  final String? allowedAppId;
+
+  const PreAuthorizedKeyRequest({
+    required this.connectKey,
+    required this.expiration,
+    required this.totalUses,
+    this.allowedAppId,
+  });
+
+  @override
+  int get hashCode =>
+      connectKey.hashCode ^
+      expiration.hashCode ^
+      totalUses.hashCode ^
+      allowedAppId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PreAuthorizedKeyRequest &&
+          runtimeType == other.runtimeType &&
+          connectKey == other.connectKey &&
+          expiration == other.expiration &&
+          totalUses == other.totalUses &&
+          allowedAppId == other.allowedAppId;
+}
+
 /// A sealed object for offline storage.
 class SealedObject {
   final String id;
@@ -428,6 +468,58 @@ class ShardProgress {
           shardIndex == other.shardIndex &&
           slabIndex == other.slabIndex &&
           elapsedMs == other.elapsedMs;
+}
+
+/// A signed request to create a pre-authorized key in indexd.
+class SignedPreAuthorizedKeyRequest {
+  /// The pre-authorized public key.
+  final String publicKey;
+
+  /// The signature over the creation request, hex-encoded.
+  final String signature;
+
+  /// The connect key used to authorize connections.
+  final String connectKey;
+
+  /// When the authorization expires.
+  final DateTime expiration;
+
+  /// The maximum number of authorized connections.
+  final int totalUses;
+
+  /// The permitted application as a hex-encoded 32-byte ID, or any
+  /// application when null.
+  final String? allowedAppId;
+
+  const SignedPreAuthorizedKeyRequest({
+    required this.publicKey,
+    required this.signature,
+    required this.connectKey,
+    required this.expiration,
+    required this.totalUses,
+    this.allowedAppId,
+  });
+
+  @override
+  int get hashCode =>
+      publicKey.hashCode ^
+      signature.hashCode ^
+      connectKey.hashCode ^
+      expiration.hashCode ^
+      totalUses.hashCode ^
+      allowedAppId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SignedPreAuthorizedKeyRequest &&
+          runtimeType == other.runtimeType &&
+          publicKey == other.publicKey &&
+          signature == other.signature &&
+          connectKey == other.connectKey &&
+          expiration == other.expiration &&
+          totalUses == other.totalUses &&
+          allowedAppId == other.allowedAppId;
 }
 
 /// A slab representing a contiguous erasure-coded segment of a file.

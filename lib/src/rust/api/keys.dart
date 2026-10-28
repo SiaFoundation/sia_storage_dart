@@ -40,6 +40,40 @@ abstract class AppKey implements RustOpaqueInterface {
   });
 }
 
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PreAuthorizedKey>>
+abstract class PreAuthorizedKey implements RustOpaqueInterface {
+  /// Imports a pre-authorized key from a 32-byte seed saved with
+  /// [PreAuthorizedKey::save].
+  static PreAuthorizedKey fromSeed({required List<int> seed}) =>
+      RustLib.instance.api.crateApiKeysPreAuthorizedKeyFromSeed(seed: seed);
+
+  /// Generates a random pre-authorized key.
+  factory PreAuthorizedKey() =>
+      RustLib.instance.api.crateApiKeysPreAuthorizedKeyNew();
+
+  /// Returns the public key corresponding to the PreAuthorizedKey,
+  /// as an ed25519-prefixed string.
+  String publicKey();
+
+  /// Saves the key's seed as a 32-byte buffer. Pass it to
+  /// [PreAuthorizedKey::from_seed] to restore the key.
+  Uint8List save();
+
+  /// Signs a message using the PreAuthorizedKey.
+  Uint8List sign({required List<int> message});
+
+  /// Signs a creation request for submission to an indexer.
+  SignedPreAuthorizedKeyRequest signRequest({
+    required PreAuthorizedKeyRequest request,
+  });
+
+  /// Verifies a signature for a given message using the PreAuthorizedKey.
+  bool verifySignature({
+    required List<int> message,
+    required List<int> signature,
+  });
+}
+
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<SharingKey>>
 abstract class SharingKey implements RustOpaqueInterface {
   /// Imports a SharingKey from a 32-byte seed.

@@ -49,6 +49,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   get rust_arc_decrement_strong_count_PinnedObjectPtr => wire
       ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObjectPtr;
 
+  CrossPlatformFinalizerArg
+  get rust_arc_decrement_strong_count_PreAuthorizedKeyPtr => wire
+      ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKeyPtr;
+
   CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_SdkPtr => wire
       ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSdkPtr;
 
@@ -104,6 +108,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   PinnedObject
   dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
+    dynamic raw,
+  );
+
+  @protected
+  PreAuthorizedKey
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey(
     dynamic raw,
   );
 
@@ -170,6 +180,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   PinnedObject
   dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
+    dynamic raw,
+  );
+
+  @protected
+  PreAuthorizedKey
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey(
     dynamic raw,
   );
 
@@ -248,6 +264,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   PinnedObject
   dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
+    dynamic raw,
+  );
+
+  @protected
+  PreAuthorizedKey
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey(
     dynamic raw,
   );
 
@@ -332,6 +354,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ObjectsCursor dco_decode_box_autoadd_objects_cursor(dynamic raw);
+
+  @protected
+  PreAuthorizedKeyRequest dco_decode_box_autoadd_pre_authorized_key_request(
+    dynamic raw,
+  );
 
   @protected
   SealedObject dco_decode_box_autoadd_sealed_object(dynamic raw);
@@ -457,10 +484,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PinnedSector dco_decode_pinned_sector(dynamic raw);
 
   @protected
+  PreAuthorizedKeyRequest dco_decode_pre_authorized_key_request(dynamic raw);
+
+  @protected
   SealedObject dco_decode_sealed_object(dynamic raw);
 
   @protected
   ShardProgress dco_decode_shard_progress(dynamic raw);
+
+  @protected
+  SignedPreAuthorizedKeyRequest dco_decode_signed_pre_authorized_key_request(
+    dynamic raw,
+  );
 
   @protected
   Slab dco_decode_slab(dynamic raw);
@@ -516,6 +551,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   PinnedObject
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PreAuthorizedKey
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey(
     SseDeserializer deserializer,
   );
 
@@ -582,6 +623,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   PinnedObject
   sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PreAuthorizedKey
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey(
     SseDeserializer deserializer,
   );
 
@@ -654,6 +701,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   PinnedObject
   sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PreAuthorizedKey
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey(
     SseDeserializer deserializer,
   );
 
@@ -740,6 +793,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ObjectsCursor sse_decode_box_autoadd_objects_cursor(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PreAuthorizedKeyRequest sse_decode_box_autoadd_pre_authorized_key_request(
     SseDeserializer deserializer,
   );
 
@@ -881,10 +939,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PinnedSector sse_decode_pinned_sector(SseDeserializer deserializer);
 
   @protected
+  PreAuthorizedKeyRequest sse_decode_pre_authorized_key_request(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SealedObject sse_decode_sealed_object(SseDeserializer deserializer);
 
   @protected
   ShardProgress sse_decode_shard_progress(SseDeserializer deserializer);
+
+  @protected
+  SignedPreAuthorizedKeyRequest sse_decode_signed_pre_authorized_key_request(
+    SseDeserializer deserializer,
+  );
 
   @protected
   Slab sse_decode_slab(SseDeserializer deserializer);
@@ -949,6 +1017,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
     PinnedObject self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey(
+    PreAuthorizedKey self,
     SseSerializer serializer,
   );
 
@@ -1026,6 +1101,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void
   sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
     PinnedObject self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey(
+    PreAuthorizedKey self,
     SseSerializer serializer,
   );
 
@@ -1116,6 +1198,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void
   sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject(
     PinnedObject self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey(
+    PreAuthorizedKey self,
     SseSerializer serializer,
   );
 
@@ -1222,6 +1311,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_objects_cursor(
     ObjectsCursor self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_pre_authorized_key_request(
+    PreAuthorizedKeyRequest self,
     SseSerializer serializer,
   );
 
@@ -1387,10 +1482,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_pinned_sector(PinnedSector self, SseSerializer serializer);
 
   @protected
+  void sse_encode_pre_authorized_key_request(
+    PreAuthorizedKeyRequest self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_sealed_object(SealedObject self, SseSerializer serializer);
 
   @protected
   void sse_encode_shard_progress(ShardProgress self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_signed_pre_authorized_key_request(
+    SignedPreAuthorizedKeyRequest self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_slab(Slab self, SseSerializer serializer);
@@ -1627,6 +1734,40 @@ class RustLibWire implements BaseWire {
       );
   late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObject =
       _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPinnedObjectPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  void
+  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey(
+      ptr,
+    );
+  }
+
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKeyPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+        'frbgen_sia_storage_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey',
+      );
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey =
+      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKeyPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  void
+  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey(
+      ptr,
+    );
+  }
+
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKeyPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+        'frbgen_sia_storage_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey',
+      );
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKey =
+      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPreAuthorizedKeyPtr
           .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   void

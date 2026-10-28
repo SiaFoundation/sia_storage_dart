@@ -30,7 +30,8 @@ import 'src/rust/api/upload.dart';
 import 'src/rust/frb_generated.dart' show RustLib;
 
 export 'src/rust/api/builder.dart' show Builder;
-export 'src/rust/api/keys.dart' show AppKey, SharingKey, SharingKeyRecord;
+export 'src/rust/api/keys.dart'
+    show AppKey, PreAuthorizedKey, SharingKey, SharingKeyRecord;
 export 'src/rust/api/object.dart' show ObjectEvent, PinnedObject, encodedSize;
 export 'src/rust/api/sdk.dart' show Sdk;
 export 'src/rust/api/shared.dart' show SharedSdk;
@@ -48,8 +49,10 @@ export 'src/rust/api/types.dart'
         ObjectSummary,
         ObjectsCursor,
         PinnedSector,
+        PreAuthorizedKeyRequest,
         SealedObject,
         ShardProgress,
+        SignedPreAuthorizedKeyRequest,
         Slab;
 
 /// Top-level entry points that auto-initialize the native runtime.
@@ -90,6 +93,21 @@ abstract final class Sia {
   static Future<SharingKey> sharingKey(List<int> seed) async {
     await ready();
     return SharingKey(seed: seed);
+  }
+
+  /// Generates a random [PreAuthorizedKey] for authorizing application
+  /// connections without the interactive approval flow.
+  static Future<PreAuthorizedKey> preAuthorizedKey() async {
+    await ready();
+    return PreAuthorizedKey();
+  }
+
+  /// Imports a [PreAuthorizedKey] from its 32-byte seed.
+  static Future<PreAuthorizedKey> preAuthorizedKeyFromSeed(
+    List<int> seed,
+  ) async {
+    await ready();
+    return PreAuthorizedKey.fromSeed(seed: seed);
   }
 
   /// Connects to an indexer with a sharing key's 32-byte seed for read-only

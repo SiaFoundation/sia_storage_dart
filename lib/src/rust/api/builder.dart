@@ -15,10 +15,10 @@ import 'types.dart';
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Builder>>
 abstract class Builder implements RustOpaqueInterface {
   /// Connects, approves, and registers the application in one call using a
-  /// 32-byte pre-authorized key seed provisioned by the indexer operator.
-  /// Returns the live SDK.
+  /// pre-authorized key provisioned by the indexer operator. Returns the
+  /// live SDK.
   Future<Sdk> connectPreAuthorized({
-    required List<int> preAuthorizedKey,
+    required PreAuthorizedKey preAuthorizedKey,
     required String mnemonic,
   });
 

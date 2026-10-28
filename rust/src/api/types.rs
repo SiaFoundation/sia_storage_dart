@@ -118,6 +118,36 @@ pub struct KeyStats {
     pub updated_at: DateTime<Utc>,
 }
 
+/// An unsigned request to create a pre-authorized key in indexd.
+pub struct PreAuthorizedKeyRequest {
+    /// The connect key used to authorize connections.
+    pub connect_key: String,
+    /// When the authorization expires.
+    pub expiration: DateTime<Utc>,
+    /// The maximum number of authorized connections.
+    pub total_uses: u32,
+    /// The permitted application as a hex-encoded 32-byte ID, or any
+    /// application when null.
+    pub allowed_app_id: Option<String>,
+}
+
+/// A signed request to create a pre-authorized key in indexd.
+pub struct SignedPreAuthorizedKeyRequest {
+    /// The pre-authorized public key.
+    pub public_key: String,
+    /// The signature over the creation request, hex-encoded.
+    pub signature: String,
+    /// The connect key used to authorize connections.
+    pub connect_key: String,
+    /// When the authorization expires.
+    pub expiration: DateTime<Utc>,
+    /// The maximum number of authorized connections.
+    pub total_uses: u32,
+    /// The permitted application as a hex-encoded 32-byte ID, or any
+    /// application when null.
+    pub allowed_app_id: Option<String>,
+}
+
 /// Progress information about a successfully uploaded or downloaded shard.
 #[derive(Clone)]
 pub struct ShardProgress {
