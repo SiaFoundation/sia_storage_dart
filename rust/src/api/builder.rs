@@ -6,7 +6,7 @@ use std::sync::Mutex;
 use sia_core::types::Hash256;
 
 use super::io::run_local;
-use super::keys::AppKey;
+use super::keys::{AppKey, PreAuthorizedKey};
 use super::sdk::Sdk;
 use super::types::AppMetadata;
 
@@ -27,8 +27,9 @@ enum BuilderState {
 ///    [Builder::response_url] to display the approval URL, then
 ///    [Builder::wait_for_approval], then [Builder::register] with the user's
 ///    BIP-39 mnemonic.
-/// 3. **Pre-authorized**: call [Builder::connect_pre_authorized] with a key
-///    provisioned by the indexer operator and the user's BIP-39 mnemonic.
+/// 3. **Pre-authorized**: call [Builder::connect_pre_authorized] with a
+///    [PreAuthorizedKey] provisioned by the indexer operator and the user's
+///    BIP-39 mnemonic.
 ///
 /// Each successful state transition consumes the builder; subsequent calls
 /// from a wrong state error out.
@@ -118,19 +119,15 @@ impl Builder {
     }
 
     /// Connects, approves, and registers the application in one call using a
-    /// 32-byte pre-authorized key seed provisioned by the indexer operator.
-    /// Returns the live SDK.
+    /// pre-authorized key provisioned by the indexer operator. Returns the
+    /// live SDK.
     pub async fn connect_pre_authorized(
         &self,
-        pre_authorized_key: Vec<u8>,
+        pre_authorized_key: &PreAuthorizedKey,
         mnemonic: String,
     ) -> Result<Sdk> {
         run_local(async {
-            let seed: [u8; 32] = pre_authorized_key
-                .as_slice()
-                .try_into()
-                .map_err(|_| anyhow!("pre-authorized keys must be 32 bytes"))?;
-            let key = sia_core::signing::PrivateKey::from_seed(&seed);
+            let key = pre_authorized_key.inner.clone();
             self.with_state_transition(|state| async move {
                 match state {
                     BuilderState::Disconnected(builder) => {

@@ -1,8 +1,10 @@
 use anyhow::{Result, anyhow};
 use flutter_rust_bridge::frb;
 use sia_core::signing::Signature;
+use sia_core::types::Hash256;
+use sia_storage::preauthorized_keys::PreAuthorizedKeyRequest as NativePreAuthorizedKeyRequest;
 
-use super::types::KeyStats;
+use super::types::{KeyStats, PreAuthorizedKeyRequest, SignedPreAuthorizedKeyRequest};
 
 /// An AppKey is used to sign requests to the indexer.
 ///
@@ -104,6 +106,105 @@ impl SharingKey {
     #[frb(sync)]
     pub fn public_key(&self) -> String {
         self.inner.public_key().to_string()
+    }
+}
+
+/// A PreAuthorizedKey authorizes application connections without the
+/// interactive approval flow.
+///
+/// The indexer operator provisions one by submitting a creation request
+/// signed with [PreAuthorizedKey::signRequest]. Applications connect with it
+/// using [Builder::connectPreAuthorized](super::builder::Builder::connect_pre_authorized).
+///
+/// # Security
+/// The exported seed is very sensitive and should be stored securely. Anyone
+/// with access to it can connect apps as if they were the user. It is not
+/// recommended to store it longer than necessary.
+#[frb(opaque)]
+pub struct PreAuthorizedKey {
+    pub(crate) inner: sia_storage::preauthorized_keys::PreAuthorizedKey,
+}
+
+#[cfg(target_arch = "wasm32")]
+unsafe impl Send for PreAuthorizedKey {}
+#[cfg(target_arch = "wasm32")]
+unsafe impl Sync for PreAuthorizedKey {}
+
+impl PreAuthorizedKey {
+    /// Generates a random pre-authorized key.
+    #[frb(sync)]
+    pub fn new() -> Self {
+        PreAuthorizedKey {
+            inner: sia_storage::preauthorized_keys::PreAuthorizedKey::new(),
+        }
+    }
+
+    /// Imports a pre-authorized key from a 32-byte seed saved with
+    /// [PreAuthorizedKey::save].
+    #[frb(sync)]
+    pub fn from_seed(seed: Vec<u8>) -> Result<Self> {
+        let seed: [u8; 32] = seed
+            .as_slice()
+            .try_into()
+            .map_err(|_| anyhow!("pre-authorized keys must be 32 bytes"))?;
+        Ok(PreAuthorizedKey {
+            inner: sia_storage::preauthorized_keys::PreAuthorizedKey::import(seed),
+        })
+    }
+
+    /// Saves the key's seed as a 32-byte buffer. Pass it to
+    /// [PreAuthorizedKey::from_seed] to restore the key.
+    #[frb(sync)]
+    pub fn save(&self) -> Vec<u8> {
+        self.inner.export().to_vec()
+    }
+
+    /// Returns the public key corresponding to the PreAuthorizedKey,
+    /// as an ed25519-prefixed string.
+    #[frb(sync)]
+    pub fn public_key(&self) -> String {
+        self.inner.public_key().to_string()
+    }
+
+    /// Signs a message using the PreAuthorizedKey.
+    #[frb(sync)]
+    pub fn sign(&self, message: Vec<u8>) -> Vec<u8> {
+        self.inner.sign(&message).as_ref().to_vec()
+    }
+
+    /// Verifies a signature for a given message using the PreAuthorizedKey.
+    #[frb(sync)]
+    pub fn verify_signature(&self, message: Vec<u8>, signature: Vec<u8>) -> Result<bool> {
+        let sig = Signature::try_from(signature.as_slice())
+            .map_err(|e| anyhow!("invalid signature: {e}"))?;
+        Ok(self.inner.public_key().verify(&message, &sig))
+    }
+
+    /// Signs a creation request for submission to an indexer.
+    #[frb(sync)]
+    pub fn sign_request(
+        &self,
+        request: PreAuthorizedKeyRequest,
+    ) -> Result<SignedPreAuthorizedKeyRequest> {
+        let allowed_app_id = request
+            .allowed_app_id
+            .map(|id| id.parse::<Hash256>())
+            .transpose()
+            .map_err(|e| anyhow!("invalid app ID: {e}"))?;
+        let signed = self.inner.sign_request(NativePreAuthorizedKeyRequest {
+            connect_key: request.connect_key,
+            expiration: request.expiration,
+            total_uses: request.total_uses,
+            allowed_app_id,
+        });
+        Ok(SignedPreAuthorizedKeyRequest {
+            public_key: signed.public_key.to_string(),
+            signature: signed.signature.to_string(),
+            connect_key: signed.connect_key,
+            expiration: signed.expiration,
+            total_uses: signed.total_uses,
+            allowed_app_id: signed.allowed_app_id.map(|id| id.to_string()),
+        })
     }
 }
 
