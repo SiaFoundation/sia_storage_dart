@@ -48,4 +48,67 @@ void main() {
     expect(a.publicKey(), b.publicKey());
     expect(a.publicKey(), matches(RegExp(r'^[0-9a-fA-F:]+$')));
   });
+
+  test('PreAuthorizedKey save is 32 bytes and round-trips', () {
+    final generated = PreAuthorizedKey.generate();
+    final seed = generated.save();
+    expect(seed.length, 32);
+    final imported = PreAuthorizedKey(seed: seed);
+    expect(imported.publicKey(), generated.publicKey());
+  });
+
+  test('PreAuthorizedKey rejects non-32-byte seeds', () {
+    expect(() => PreAuthorizedKey(seed: List.filled(31, 0)), throwsA(anything));
+    expect(() => PreAuthorizedKey(seed: List.filled(33, 0)), throwsA(anything));
+  });
+
+  test('PreAuthorizedKey signs and verifies messages', () {
+    final key = PreAuthorizedKey(seed: List<int>.filled(32, 2));
+    final msg = [1, 2, 3];
+    final sig = key.sign(message: msg);
+    expect(sig.length, 64);
+    expect(key.verifySignature(message: msg, signature: sig), isTrue);
+    expect(key.verifySignature(message: [4], signature: sig), isFalse);
+  });
+
+  test('signRequest echoes the request and signs it', () {
+    final key = PreAuthorizedKey(seed: List<int>.filled(32, 2));
+    final expiration = DateTime.utc(2030, 1, 2, 3, 4, 5);
+    final appId = '03' * 32;
+    final signed = key.signRequest(
+      request: PreAuthorizedKeyRequest(
+        connectKey: 'connect-key',
+        expiration: expiration,
+        totalUses: 5,
+        allowedAppId: appId,
+      ),
+    );
+    expect(signed.publicKey, key.publicKey());
+    expect(signed.connectKey, 'connect-key');
+    expect(signed.expiration.toUtc(), expiration);
+    expect(signed.totalUses, 5);
+    expect(signed.allowedAppId, appId);
+    expect(signed.signature, matches(RegExp(r'^[0-9a-fA-F]{128}$')));
+  });
+
+  test('signRequest allows a null app ID and rejects an invalid one', () {
+    final key = PreAuthorizedKey(seed: List<int>.filled(32, 2));
+    final request = PreAuthorizedKeyRequest(
+      connectKey: 'connect-key',
+      expiration: DateTime.utc(2030),
+      totalUses: 1,
+    );
+    expect(key.signRequest(request: request).allowedAppId, isNull);
+    expect(
+      () => key.signRequest(
+        request: PreAuthorizedKeyRequest(
+          connectKey: 'connect-key',
+          expiration: DateTime.utc(2030),
+          totalUses: 1,
+          allowedAppId: 'not-a-hash',
+        ),
+      ),
+      throwsA(anything),
+    );
+  });
 }

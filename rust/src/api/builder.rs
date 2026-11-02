@@ -6,7 +6,7 @@ use std::sync::Mutex;
 use sia_core::types::Hash256;
 
 use super::io::run_local;
-use super::keys::AppKey;
+use super::keys::{AppKey, PreAuthorizedKey};
 use super::sdk::Sdk;
 use super::types::AppMetadata;
 
@@ -118,19 +118,15 @@ impl Builder {
     }
 
     /// Connects, approves, and registers the application in one call using a
-    /// 32-byte pre-authorized key seed provisioned by the indexer operator.
-    /// Returns the live SDK.
+    /// [PreAuthorizedKey] provisioned by the indexer operator. Returns the
+    /// live SDK.
     pub async fn connect_pre_authorized(
         &self,
-        pre_authorized_key: Vec<u8>,
+        pre_authorized_key: &PreAuthorizedKey,
         mnemonic: String,
     ) -> Result<Sdk> {
         run_local(async {
-            let seed: [u8; 32] = pre_authorized_key
-                .as_slice()
-                .try_into()
-                .map_err(|_| anyhow!("pre-authorized keys must be 32 bytes"))?;
-            let key = sia_core::signing::PrivateKey::from_seed(&seed);
+            let key = pre_authorized_key.inner.clone();
             self.with_state_transition(|state| async move {
                 match state {
                     BuilderState::Disconnected(builder) => {

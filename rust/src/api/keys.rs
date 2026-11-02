@@ -1,6 +1,9 @@
 use anyhow::{Result, anyhow};
+use chrono::{DateTime, Utc};
 use flutter_rust_bridge::frb;
 use sia_core::signing::Signature;
+use sia_core::types::Hash256;
+use sia_storage::preauthorized_keys::PreAuthorizedKeyRequest as StorageRequest;
 
 use super::types::KeyStats;
 
@@ -158,5 +161,132 @@ pub(crate) fn key_stats_from_native(s: sia_storage::KeyStats) -> KeyStats {
         expires_at: s.expires_at,
         created_at: s.created_at,
         updated_at: s.updated_at,
+    }
+}
+
+/// An unsigned request to create a pre-authorized key in indexd.
+pub struct PreAuthorizedKeyRequest {
+    /// The connect key used to authorize connections.
+    pub connect_key: String,
+    /// When the authorization expires.
+    pub expiration: DateTime<Utc>,
+    /// The maximum number of authorized connections.
+    pub total_uses: u32,
+    /// The permitted application's hex-encoded ID, or any application when
+    /// null.
+    pub allowed_app_id: Option<String>,
+}
+
+/// A signed request to create a pre-authorized key in indexd.
+pub struct SignedPreAuthorizedKeyRequest {
+    /// The pre-authorized public key.
+    pub public_key: String,
+    /// The signature over the creation request, hex-encoded.
+    pub signature: String,
+    /// The connect key used to authorize connections.
+    pub connect_key: String,
+    /// When the authorization expires.
+    pub expiration: DateTime<Utc>,
+    /// The maximum number of authorized connections.
+    pub total_uses: u32,
+    /// The permitted application's hex-encoded ID, or null for any
+    /// application.
+    pub allowed_app_id: Option<String>,
+}
+
+/// A key used to authorize application connections without the interactive
+/// approval flow.
+///
+/// Indexer operators create one, register it with
+/// [PreAuthorizedKey::sign_request], and hand its seed to the application,
+/// which connects with
+/// [Builder::connect_pre_authorized](super::builder::Builder::connect_pre_authorized).
+#[frb(opaque)]
+pub struct PreAuthorizedKey {
+    pub(crate) inner: sia_storage::preauthorized_keys::PreAuthorizedKey,
+}
+
+#[cfg(target_arch = "wasm32")]
+unsafe impl Send for PreAuthorizedKey {}
+#[cfg(target_arch = "wasm32")]
+unsafe impl Sync for PreAuthorizedKey {}
+
+impl PreAuthorizedKey {
+    /// Generates a random pre-authorized key.
+    #[frb(sync)]
+    pub fn generate() -> Self {
+        PreAuthorizedKey {
+            inner: sia_storage::preauthorized_keys::PreAuthorizedKey::new(),
+        }
+    }
+
+    /// Imports a pre-authorized key from a 32-byte seed.
+    #[frb(sync)]
+    pub fn new(seed: Vec<u8>) -> Result<Self> {
+        let seed: [u8; 32] = seed
+            .as_slice()
+            .try_into()
+            .map_err(|_| anyhow!("pre-authorized keys must be 32 bytes"))?;
+        Ok(PreAuthorizedKey {
+            inner: sia_storage::preauthorized_keys::PreAuthorizedKey::import(seed),
+        })
+    }
+
+    /// Saves the key as a 32-byte seed. Pass it to [PreAuthorizedKey::new] to
+    /// restore the key.
+    ///
+    /// # Security
+    /// Anyone with this seed can connect applications as the user; store it
+    /// securely and no longer than necessary.
+    #[frb(sync)]
+    pub fn save(&self) -> Vec<u8> {
+        self.inner.export().to_vec()
+    }
+
+    /// Returns the public key corresponding to the key, hex-encoded.
+    #[frb(sync)]
+    pub fn public_key(&self) -> String {
+        self.inner.public_key().to_string()
+    }
+
+    /// Signs a message using the key.
+    #[frb(sync)]
+    pub fn sign(&self, message: Vec<u8>) -> Vec<u8> {
+        self.inner.sign(&message).as_ref().to_vec()
+    }
+
+    /// Verifies a signature for a given message using the key.
+    #[frb(sync)]
+    pub fn verify_signature(&self, message: Vec<u8>, signature: Vec<u8>) -> Result<bool> {
+        let sig = Signature::try_from(signature.as_slice())
+            .map_err(|e| anyhow!("invalid signature: {e}"))?;
+        Ok(self.inner.public_key().verify(&message, &sig))
+    }
+
+    /// Signs a creation request for submission to an indexer.
+    #[frb(sync)]
+    pub fn sign_request(
+        &self,
+        request: PreAuthorizedKeyRequest,
+    ) -> Result<SignedPreAuthorizedKeyRequest> {
+        let allowed_app_id = request
+            .allowed_app_id
+            .map(|id| id.parse::<Hash256>())
+            .transpose()
+            .map_err(|e| anyhow!("invalid app ID: {e}"))?;
+        let signed = self.inner.sign_request(StorageRequest {
+            connect_key: request.connect_key,
+            expiration: request.expiration,
+            total_uses: request.total_uses,
+            allowed_app_id,
+        });
+        Ok(SignedPreAuthorizedKeyRequest {
+            public_key: signed.public_key.to_string(),
+            signature: signed.signature.to_string(),
+            connect_key: signed.connect_key,
+            expiration: signed.expiration,
+            total_uses: signed.total_uses,
+            allowed_app_id: signed.allowed_app_id.map(|id| id.to_string()),
+        })
     }
 }
