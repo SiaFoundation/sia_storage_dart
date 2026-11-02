@@ -40,6 +40,42 @@ abstract class AppKey implements RustOpaqueInterface {
   });
 }
 
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PreAuthorizedKey>>
+abstract class PreAuthorizedKey implements RustOpaqueInterface {
+  /// Generates a random pre-authorized key.
+  static PreAuthorizedKey generate() =>
+      RustLib.instance.api.crateApiKeysPreAuthorizedKeyGenerate();
+
+  /// Imports a pre-authorized key from a 32-byte seed.
+  factory PreAuthorizedKey({required List<int> seed}) =>
+      RustLib.instance.api.crateApiKeysPreAuthorizedKeyNew(seed: seed);
+
+  /// Returns the public key corresponding to the key, hex-encoded.
+  String publicKey();
+
+  /// Saves the key as a 32-byte seed. Pass it to [PreAuthorizedKey::new] to
+  /// restore the key.
+  ///
+  /// # Security
+  /// Anyone with this seed can connect applications as the user; store it
+  /// securely and no longer than necessary.
+  Uint8List save();
+
+  /// Signs a message using the key.
+  Uint8List sign({required List<int> message});
+
+  /// Signs a creation request for submission to an indexer.
+  SignedPreAuthorizedKeyRequest signRequest({
+    required PreAuthorizedKeyRequest request,
+  });
+
+  /// Verifies a signature for a given message using the key.
+  bool verifySignature({
+    required List<int> message,
+    required List<int> signature,
+  });
+}
+
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<SharingKey>>
 abstract class SharingKey implements RustOpaqueInterface {
   /// Imports a SharingKey from a 32-byte seed.
@@ -61,4 +97,96 @@ abstract class SharingKeyRecord implements RustOpaqueInterface {
   SharingKey get key;
 
   KeyStats get stats;
+}
+
+/// An unsigned request to create a pre-authorized key in indexd.
+class PreAuthorizedKeyRequest {
+  /// The connect key used to authorize connections.
+  final String connectKey;
+
+  /// When the authorization expires.
+  final DateTime expiration;
+
+  /// The maximum number of authorized connections.
+  final int totalUses;
+
+  /// The permitted application's hex-encoded ID, or any application when
+  /// null.
+  final String? allowedAppId;
+
+  const PreAuthorizedKeyRequest({
+    required this.connectKey,
+    required this.expiration,
+    required this.totalUses,
+    this.allowedAppId,
+  });
+
+  @override
+  int get hashCode =>
+      connectKey.hashCode ^
+      expiration.hashCode ^
+      totalUses.hashCode ^
+      allowedAppId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PreAuthorizedKeyRequest &&
+          runtimeType == other.runtimeType &&
+          connectKey == other.connectKey &&
+          expiration == other.expiration &&
+          totalUses == other.totalUses &&
+          allowedAppId == other.allowedAppId;
+}
+
+/// A signed request to create a pre-authorized key in indexd.
+class SignedPreAuthorizedKeyRequest {
+  /// The pre-authorized public key.
+  final String publicKey;
+
+  /// The signature over the creation request, hex-encoded.
+  final String signature;
+
+  /// The connect key used to authorize connections.
+  final String connectKey;
+
+  /// When the authorization expires.
+  final DateTime expiration;
+
+  /// The maximum number of authorized connections.
+  final int totalUses;
+
+  /// The permitted application's hex-encoded ID, or null for any
+  /// application.
+  final String? allowedAppId;
+
+  const SignedPreAuthorizedKeyRequest({
+    required this.publicKey,
+    required this.signature,
+    required this.connectKey,
+    required this.expiration,
+    required this.totalUses,
+    this.allowedAppId,
+  });
+
+  @override
+  int get hashCode =>
+      publicKey.hashCode ^
+      signature.hashCode ^
+      connectKey.hashCode ^
+      expiration.hashCode ^
+      totalUses.hashCode ^
+      allowedAppId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SignedPreAuthorizedKeyRequest &&
+          runtimeType == other.runtimeType &&
+          publicKey == other.publicKey &&
+          signature == other.signature &&
+          connectKey == other.connectKey &&
+          expiration == other.expiration &&
+          totalUses == other.totalUses &&
+          allowedAppId == other.allowedAppId;
 }

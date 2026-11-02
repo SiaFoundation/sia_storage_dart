@@ -116,6 +116,8 @@ These two together put the page in cross-origin-isolated mode, which `SharedArra
 
 - [`Sia.builder`](lib/sia_storage.dart) — onboarding flow
 - [`Sia.appKey`](lib/sia_storage.dart) — reconnect with a saved key
+- [`Sia.generatePreAuthorizedKey`](lib/sia_storage.dart) — new pre-authorized key
+- [`Sia.preAuthorizedKey`](lib/sia_storage.dart) — import a pre-authorized key seed
 - [`Sia.generateRecoveryPhrase`](lib/sia_storage.dart) — BIP-39 12-word phrase
 - [`Sia.validateRecoveryPhrase`](lib/sia_storage.dart) — phrase validation
 - [`Sia.ready`](lib/sia_storage.dart) — explicit pre-warm (rarely needed)

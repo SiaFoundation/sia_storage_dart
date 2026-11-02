@@ -9,8 +9,8 @@ crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 flutter_rust_bridge = { version = "=2.13.0", features = ["chrono"] }
-sia_storage = "0.13.4"
-sia_core = "0.6.0"
+sia_storage = "0.13.6"
+sia_core = "0.6.1"
 chrono = "0.4"
 anyhow = "1"
 bytes = "1"
@@ -20,7 +20,7 @@ tokio-util = { version = "0.7", features = ["io"] }
 
 # sia_storage's `fs` feature (path-based uploads) is unavailable on wasm.
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.sia_storage]
-version = "0.13.4"
+version = "0.13.6"
 features = ["fs"]
 
 # tokio: multi-threaded on native, single-threaded only on wasm.
