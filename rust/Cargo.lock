@@ -1560,9 +1560,9 @@ dependencies = [
 
 [[package]]
 name = "num-bigint"
-version = "0.4.8"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c89e69e7e0f03bea5ef08013795c25018e101932225a656383bd384495ecc367"
+checksum = "93e7820bc0a80a0238e650327316f929ba18d5be054b647490a3a6a339f3e7c0"
 dependencies = [
  "num-integer",
  "num-traits",
@@ -1580,17 +1580,6 @@ version = "0.1.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ce2d95d4b3734dc35aa2f45e1aa22cd416814592a4f9d9205e11affd5b8e10b"
 dependencies = [
- "num-traits",
-]
-
-[[package]]
-name = "num-rational"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f83d14da390562dca69fc84082e73e548e1ad308d24accdedd2720017cb37824"
-dependencies = [
- "num-bigint",
- "num-integer",
  "num-traits",
 ]
 
@@ -2285,9 +2274,9 @@ checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
 
 [[package]]
 name = "sia_core"
-version = "0.6.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "057ad404bf9346b6bdfa70b9ddda3a9bd47be543ab0daa396a710455004d779b"
+checksum = "31c015e27d7a99ebe3bd5ec90b55ed73cc1e5afb2f5ef9017d0503c2b63b962a"
 dependencies = [
  "base64",
  "bip39",
@@ -2297,7 +2286,6 @@ dependencies = [
  "ed25519-dalek",
  "hex",
  "num-bigint",
- "num-rational",
  "num-traits",
  "serde",
  "serde_json",
@@ -2348,9 +2336,9 @@ dependencies = [
 
 [[package]]
 name = "sia_storage"
-version = "0.13.4"
+version = "0.13.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31ceb6b4a788a37260cfe4ab413f45a0c2b97d67d8a9c6d370073f7144dab562"
+checksum = "3c597ae116366c1333fb5a5f32da14a9525a1ad73c2cc561a82ab294bdc019da"
 dependencies = [
  "base64",
  "blake2b_simd",
